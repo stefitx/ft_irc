@@ -43,7 +43,7 @@ int main(int argc, char **argv)
         std::cerr << "Invalid port\n";
         return EXIT_FAILURE;
     }
-    pass(argv[2]);
+    pass = argv[2];
     Server srv(port, pass);
     srv.run();
     return (0);

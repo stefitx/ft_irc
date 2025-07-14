@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "../inc/Server.hpp"
 
 Server::Server(unsigned short port, const std::string &password)
     : _port(port), _password(password), _listenFd(-1), _running(false) {}
@@ -73,7 +73,9 @@ void Server::initListeningSocket()
 
     makeSocketNonBlocking(_listenFd);
 
-    pfd = { _listenFd, POLLIN, 0 };
+    pfd.fd = _listenFd;
+    pfd.events = POLLIN;
+    pfd.revents = 0;
     _pollFds.push_back(pfd);
 }
 
@@ -103,37 +105,40 @@ void Server::acceptNewClient()
 
 void Server::handleClientData(size_t idx)
 {
+    Client *c = NULL;
     int  fd = _pollFds[idx].fd;
     char buf[512];
 
+    std::cout << "THIS PRINTS." << std::endl;
+    c->setFd(fd);
+    std::cout << "THIS DOES NOT" << std::endl;
     while (true)
     {
-        ssize_t n = recv(fd, buf, sizeof(buf), 0);
-        if (n == -1)
+        ssize_t bytes = recv(c->getFd(), buf, sizeof(buf), 0);
+        if (bytes == -1)
         {
             if (errno == EAGAIN || errno == EWOULDBLOCK) break;
             perror("recv");
             removeClient(idx);
             return;
         }
-        if (n == 0)
+        if (bytes == 0)
         {
             std::cout << "[i] Client closed fd=" << fd << "\n";
             removeClient(idx);
             return;
         }
-
-        Client *c = lookupClientByFd(fd);
-        c->inBuffer().append(buf, n);
-
-        // Extract complete lines ending with \r\n
-        std::string &buffer = c->inBuffer();
-        size_t pos;
-        while ((pos = buffer.find("\r\n")) != std::string::npos)
+        else if(bytes > 512)
         {
-            std::string line = buffer.substr(0, pos);
-            buffer.erase(0, pos + 2);
-            processLine(c, line); // Stub function for later parts
+            std::cerr << "[!] Warning: Received more than 512 bytes, weird things might happen ((>.<)).\n";
+        }
+        else
+        {
+            buf[bytes] = '\0';
+            c->setBuffer(buf);
+            if (c->getBuffer().find_first_of("\r\n") == std::string::npos)
+                return;
+            processBuffer(c); // Stub function for later parts
         }
     }
 }
@@ -149,27 +154,27 @@ void Server::removeClient(size_t idx)
     _pollFds.pop_back();
 }
 
-Client *Server::lookupClientByFd(int fd)
-{
-    std::map<int, Client *>::iterator it = _clients.find(fd);
-    return (it == _clients.end()) ? NULL : it->second;
-}
+// Client *Server::lookupClientByFd(int fd)
+// {
+//     std::map<int, Client *>::iterator it = _clients.find(fd);
+//     return (it == _clients.end()) ? NULL : it->second;
+// }
 
-Channel *Server::getOrCreateChannel(const std::string &name)
-{
-    std::map<std::string, Channel *>::iterator it = _channels.find(name);
-    if (it != _channels.end()) return it->second;
+// Channel *Server::getOrCreateChannel(const std::string &name)
+// {
+//     std::map<std::string, Channel *>::iterator it = _channels.find(name);
+//     if (it != _channels.end()) return it->second;
 
-    Channel *ch = new Channel(name);
-    _channels[name] = ch;
-    return ch;
-}
+//     Channel *ch = new Channel(name);
+//     _channels[name] = ch;
+//     return ch;
+// }
 
-void Server::processLine(Client *c, const std::string &line)
+void Server::processBuffer(Client *c)
 {
     // TODO: In Part 2 we will parse and dispatch commands here.
     (void)c;
-    std::cout << "[>] RECV line: " << line << "\n";
+    std::cout << "[>] RECV line: " << c->getBuffer() << "\n";
 }
 
 void Server::run()

@@ -4,19 +4,18 @@
 # include <vector>
 # include <map>
 # include "Client.hpp"
-# include <string>
 
 class	Channel
 {
 	public:
-		Channel(std::string name); // Declare the constructor
+		Channel(std::string name);
 		Channel(const Channel&);
 		~Channel();
 
 		Channel	&operator=(const Channel&);
 	private:
 		std::string			name;
-		std::map<int, Client>	clients; // int fd of the client
+		// std::map<int, Client>	clients; // int fd of the client
 		std::vector<std::string>	privileges;
 		// los privilegios van relacionados con los clientes -> look for a better container
 		int				clientNum;

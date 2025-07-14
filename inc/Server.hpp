@@ -10,8 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#pragma once
 
 #include <string>
 #include <vector>
@@ -25,15 +24,18 @@
 #include <errno.h>
 #include <cstring>
 #include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
 
-#include "Client.hpp"
 #include "Channel.hpp"
-#include "CommandParser.hpp"
+// #include "CommandParser.hpp"
+
+class Client;
 
 class Server
 {
 	private:
-		unsigned short						port;
+		unsigned short						_port;
 		std::string							_password;
 
 
@@ -43,7 +45,7 @@ class Server
 		std::map<int, Client *>				_clients;
 		std::map<std::string, Channel *>	_channels;
 		bool								_running;
-		
+
 		void initListeningSocket();
 		void makeSocketNonBlocking(int fd);
 
@@ -52,13 +54,11 @@ class Server
 		void removeClient(size_t pollIndex);
 
 
-		Client *lookupClientByFd(int fd);
-		void    processLine(Client *c, const std::string &line);
-		Channel *getOrCreateChannel(const std::string &name);
+		// Client *lookupClientByFd(int fd);
+		void    processBuffer(Client *c);
+		// Channel *getOrCreateChannel(const std::string &name);
 	public:
 		Server(unsigned short port, const std::string &password);
 		~Server();
 		void run();
-}
-
-#endif
+} ;

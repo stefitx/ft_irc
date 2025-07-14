@@ -16,7 +16,9 @@ CXXFLAGS:= -Wall -Wextra -Werror -std=c++98
 SRC_DIR := srcs
 INC_DIR := inc
 SRC_NAMES := main.cpp \
-             Server.cpp
+             Server.cpp \
+			 Client.cpp \
+			 Channel.cpp
 
 SRC     := $(addprefix $(SRC_DIR)/, $(SRC_NAMES))
 
