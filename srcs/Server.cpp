@@ -105,13 +105,10 @@ void Server::acceptNewClient()
 
 void Server::handleClientData(size_t idx)
 {
-    Client *c = NULL;
     int  fd = _pollFds[idx].fd;
+    Client *c = new Client(fd);
     char buf[512];
 
-    std::cout << "THIS PRINTS." << std::endl;
-    c->setFd(fd);
-    std::cout << "THIS DOES NOT" << std::endl;
     while (true)
     {
         ssize_t bytes = recv(c->getFd(), buf, sizeof(buf), 0);
@@ -174,7 +171,7 @@ void Server::processBuffer(Client *c)
 {
     // TODO: In Part 2 we will parse and dispatch commands here.
     (void)c;
-    std::cout << "[>] RECV line: " << c->getBuffer() << "\n";
+    std::cout << "[>] RECV line: " << c->getBuffer();
 }
 
 void Server::run()
@@ -184,7 +181,8 @@ void Server::run()
     std::cout << "[+] Listening on port " << _port << " (Linux)" << std::endl;
 
     while (_running)
-    {
+    {  
+      //  std::cout << "inside running loop " << std::endl;
         if (poll(&_pollFds[0], _pollFds.size(), -1) == -1)
         {
             if (errno == EINTR) continue;
