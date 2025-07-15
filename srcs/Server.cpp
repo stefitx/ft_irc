@@ -40,10 +40,14 @@ void Server::makeSocketNonBlocking(int fd)
 
 void Server::initListeningSocket()
 {
-	int					opt;
-	struct sockaddr_in	addr;
-	struct pollfd		pfd;
-
+    int opt;
+    struct sockaddr_in addr;
+    struct pollfd pfd;
+    char  hostnameStr[256];
+    
+    if (gethostname(hostnameStr, sizeof(hostnameStr)) == -1)
+        throw std::runtime_error("initConnection: gethostname()");
+    _hostname = hostnameStr;
     _listenFd = socket(AF_INET, SOCK_STREAM, 0);
     if (_listenFd == -1)
     {
@@ -55,9 +59,9 @@ void Server::initListeningSocket()
     setsockopt(_listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     std::memset(&addr, 0, sizeof(addr));
-    addr.sin_family      = AF_INET;
+    addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port        = htons(_port);
+    addr.sin_port = htons(_port);
 
     if (bind(_listenFd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == -1)
     {
@@ -81,40 +85,45 @@ void Server::initListeningSocket()
 
 void Server::acceptNewClient()
 {
+    // should we remove the while()?
     while (true)
     {
-        struct sockaddr_in cliAddr; socklen_t len = sizeof(cliAddr);
+        struct sockaddr_in cliAddr;
+        socklen_t len = sizeof(cliAddr);
         int fd = accept(_listenFd, reinterpret_cast<struct sockaddr *>(&cliAddr), &len);
 
         if (fd == -1)
         {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) break; // No more
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+                break; // No more
             perror("accept");
-            break;
+            return;
         }
 
         makeSocketNonBlocking(fd);
         _clients[fd] = new Client(fd);
 
-        struct pollfd pfd = { fd, POLLIN, 0 };
+        struct pollfd pfd = {fd, POLLIN, 0};
         _pollFds.push_back(pfd);
 
         std::cout << "[+] Client connected fd=" << fd << "\n";
-    }
+   }
 }
 
 void Server::handleClientData(size_t idx)
 {
-    int  fd = _pollFds[idx].fd;
+    int fd = _pollFds[idx].fd;
     Client *c = new Client(fd);
-    char buf[512];
+    char buf[1024];
 
-    while (true)
-    {
+
+    //while (true)
+   // {
         ssize_t bytes = recv(c->getFd(), buf, sizeof(buf), 0);
         if (bytes == -1)
         {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) break;
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+                return;
             perror("recv");
             removeClient(idx);
             return;
@@ -125,7 +134,7 @@ void Server::handleClientData(size_t idx)
             removeClient(idx);
             return;
         }
-        else if(bytes > 512)
+        else if (bytes > 1024)
         {
             std::cerr << "[!] Warning: Received more than 512 bytes, weird things might happen ((>.<)).\n";
         }
@@ -137,7 +146,7 @@ void Server::handleClientData(size_t idx)
                 return;
             processBuffer(c); // Stub function for later parts
         }
-    }
+    // }
 }
 
 void Server::removeClient(size_t idx)
@@ -167,11 +176,52 @@ void Server::removeClient(size_t idx)
 //     return ch;
 // }
 
+void    Server::nickCmd(Client &client, std::vector<std::string> args)
+{
+    client.setNick(args[0]);
+    std::cout << "client nick = " << client.getNick() << std::endl;
+    //send 
+}
+
 void Server::processBuffer(Client *c)
 {
     // TODO: In Part 2 we will parse and dispatch commands here.
-    (void)c;
-    std::cout << "[>] RECV line: " << c->getBuffer();
+    std::cout << "[" << c->getFd() << "] RECV line: " << c->getBuffer();
+ 
+    std::string &buf = c->getBuffer();
+    std::vector<std::string> msgs;
+    while (buf.size())
+    {
+        msgs.push_back(buf.substr(0, buf.find_first_of("\r\n")));
+        buf.erase(0, buf.find_first_of("\r\n") + 2);
+    }
+    for (std::vector<std::string>::iterator it = msgs.begin(); it != msgs.end(); it++)
+    {
+        //std::cout << "<" << c->getFd() << "> " << "<< " << *it << std::endl; // debug
+
+        std::istringstream iss(*it);
+        std::string tmp;
+        std::vector<std::string> args;
+
+        while (iss >> tmp)
+        {
+            if (tmp[0] == ':')
+            {
+                while (!iss.eof())
+                {
+                    std::string tmp_peek;
+                    iss >> tmp_peek;
+                    tmp += ' ';
+                    tmp += tmp_peek;
+                }
+            }
+            args.push_back(tmp);
+        }
+      //  choose cmd
+      //  do function for that cmd
+      // response to client? (no siempre)
+      //send(fd, "")
+    }
 }
 
 void Server::run()
@@ -179,25 +229,28 @@ void Server::run()
     initListeningSocket();
     _running = true;
     std::cout << "[+] Listening on port " << _port << " (Linux)" << std::endl;
-
+    
     while (_running)
-    {  
-      //  std::cout << "inside running loop " << std::endl;
+    {
         if (poll(&_pollFds[0], _pollFds.size(), -1) == -1)
         {
-            if (errno == EINTR) continue;
+            if (errno == EINTR)
+                continue;
             perror("poll");
             break;
         }
 
-        if (_pollFds[0].revents & POLLIN) acceptNewClient();
+        if (_pollFds[0].revents & POLLIN)
+            acceptNewClient();
 
         size_t i = _pollFds.size();
         while (i > 1)
         {
             --i;
-            if (_pollFds[i].revents & POLLIN) handleClientData(i);
-            if (_pollFds[i].revents & (POLLERR | POLLHUP | POLLNVAL)) removeClient(i);
+            if (_pollFds[i].revents & POLLIN)
+                handleClientData(i);
+            if (_pollFds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
+                removeClient(i);
         }
     }
 }

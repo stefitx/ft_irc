@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -47,6 +48,7 @@ class Server
 		std::map<int, Client *>				_clients;
 		std::map<std::string, Channel *>	_channels;
 		bool								_running;
+		std::string							_hostname;
 
 		void initListeningSocket();
 		void makeSocketNonBlocking(int fd);
@@ -59,6 +61,11 @@ class Server
 		// Client *lookupClientByFd(int fd);
 		void    processBuffer(Client *c);
 		// Channel *getOrCreateChannel(const std::string &name);
+
+		// COMMANDS TO BE RECEIVED
+		void	nickCmd(Client&, std::vector<std::string> args);
+
+
 	public:
 		Server(unsigned short port, const std::string &password);
 		~Server();
