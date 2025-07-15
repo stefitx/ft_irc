@@ -10,32 +10,42 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME    := ircserv
-CXX     := c++
-CXXFLAGS:= -Wall -Wextra -Werror -std=c++98
-SRC_DIR := srcs
-INC_DIR := inc
-SRC_NAMES := main.cpp \
-             Server.cpp \
-			 Client.cpp \
-			 Channel.cpp
+NAME		:= ircserv
+CXX			:= c++
+CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -MMD -MP
+OBJ_DIR		:= obj/
+SRC_DIR		:= srcs/
+INC_DIR		:= inc
 
-SRC     := $(addprefix $(SRC_DIR)/, $(SRC_NAMES))
+INCLUDES	:= -I$(INC_DIR)
+SRC_NAMES	:=	main.cpp \
+				Server.cpp \
+				Client.cpp \
+				Channel.cpp
 
-OBJ     := $(SRC:.cpp=.o)
-INCLUDES:= -I$(INC_DIR)
+SRC			:= $(addprefix $(SRC_DIR), $(SRC_NAMES))
+OBJ			:=$(patsubst $(SRC_DIR)%.cpp,$(OBJ_DIR)%.o,$(SRC))
+DEP			:= $(OBJ:.o=.d)
 
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJ) -o $@
+	@echo "Executable created: $(NAME)"
+
+$(OBJ_DIR)%.o: $(SRC_DIR)%.cpp Makefile
+	@echo "Compiling $< into $@"
+	@mkdir -p $(dir $@)
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -f $(OBJ)
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
 	rm -f $(NAME)
 
 re: fclean all
+
+-include $(DEP)
 
 .PHONY: all clean fclean re

@@ -44,7 +44,7 @@ void Server::initListeningSocket()
     struct sockaddr_in addr;
     struct pollfd pfd;
     char  hostnameStr[256];
-    
+
     if (gethostname(hostnameStr, sizeof(hostnameStr)) == -1)
         throw std::runtime_error("initConnection: gethostname()");
     _hostname = hostnameStr;
@@ -114,6 +114,7 @@ void Server::handleClientData(size_t idx)
 {
     int fd = _pollFds[idx].fd;
     Client *c = new Client(fd);
+	c = _clients[fd];
     char buf[1024];
 
 
@@ -178,16 +179,67 @@ void Server::removeClient(size_t idx)
 
 void    Server::nickCmd(Client &client, std::vector<std::string> args)
 {
+	args.erase(args.begin()); // Remove the command itself
+	std::cout << "NICK command received from client fd: " << client.getFd() << std::endl;
     client.setNick(args[0]);
     std::cout << "client nick = " << client.getNick() << std::endl;
-    //send 
+    //send
 }
+
+void Server::passCmd(Client &client, std::vector<std::string> args)
+{
+
+	args.erase(args.begin());
+	std::cout << "PASS command received from client fd: " << client.getFd() << std::endl;
+	// Do we ask for a password at the beginning?
+	std::cout << "Password received: " << args[0] << " size "<< args[0].size() << std::endl;
+	if (client.getRegistryState() == true)
+	{
+		// Look the num code and what should say exactly
+		std::cerr << "Client fd=" << client.getFd() << " already registered, ignoring PASS command.\n";
+		return;
+	}
+	// else if (!args[0].size())
+	// {
+	// // Look the num code and what should say exactly
+	// 	std::cerr << "Empty password received from client fd=" << client.getFd() << "\n";
+	// 	return;
+	// }
+	else if (args[0] != _password)
+	{
+	// Look the num code and what should say exactly
+		std::cerr << "Wrong password received from client fd=" << client.getFd() << "\n";
+		return;
+	}
+	client.setRegistryState(true);
+	std::cout << "Client fd=" << client.getFd() << " authenticated successfully.\n";
+}
+
+void Server::userCmd(Client &client, std::vector<std::string> args)
+{
+	args.erase(args.begin());
+	std::cout << "USER command received from client fd: " << client.getFd() << std::endl;
+
+	if (args.size() < 4)
+	{
+		std::cerr << "Not enough parameters for USER command from client fd=" << client.getFd() << "\n";
+		return;
+	}
+	if (client.getHandShake() == true)
+	{
+		std::cerr << "Client fd=" << client.getFd() << " already registered, ignoring USER command.\n";
+		return;
+	}
+	client.setUser(args[0]);
+	// To be continued...
+}
+
 
 void Server::processBuffer(Client *c)
 {
     // TODO: In Part 2 we will parse and dispatch commands here.
     std::cout << "[" << c->getFd() << "] RECV line: " << c->getBuffer();
- 
+
     std::string &buf = c->getBuffer();
     std::vector<std::string> msgs;
     while (buf.size())
@@ -217,9 +269,15 @@ void Server::processBuffer(Client *c)
             }
             args.push_back(tmp);
         }
-      //  choose cmd
-      //  do function for that cmd
-      // response to client? (no siempre)
+
+		if (args.empty())
+			continue;
+		if (args[0] == "NICK")
+			nickCmd(*c, args);
+		else if (args[0] == "PASS")
+			passCmd(*c, args);
+	// else if (args[0] == "USER")
+			// 	userCmd(*c, args);
       //send(fd, "")
     }
 }
@@ -229,7 +287,7 @@ void Server::run()
     initListeningSocket();
     _running = true;
     std::cout << "[+] Listening on port " << _port << " (Linux)" << std::endl;
-    
+
     while (_running)
     {
         if (poll(&_pollFds[0], _pollFds.size(), -1) == -1)

@@ -64,6 +64,8 @@ class Server
 
 		// COMMANDS TO BE RECEIVED
 		void	nickCmd(Client&, std::vector<std::string> args);
+		void	userCmd(Client&, std::vector<std::string> args);
+		void	passCmd(Client&, std::vector<std::string> args);
 
 
 	public:
