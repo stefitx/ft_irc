@@ -21,7 +21,8 @@ INCLUDES	:= -I$(INC_DIR)
 SRC_NAMES	:=	main.cpp \
 				Server.cpp \
 				Client.cpp \
-				Channel.cpp
+				Channel.cpp \
+				ServerCmdUtils.cpp
 
 SRC			:= $(addprefix $(SRC_DIR), $(SRC_NAMES))
 OBJ			:=$(patsubst $(SRC_DIR)%.cpp,$(OBJ_DIR)%.o,$(SRC))
