@@ -3,20 +3,28 @@
 void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string> args)
 {
 	args.erase(args.begin());
-	if (cmd == "NICK")
+	if(cmd == "NICK" || cmd == "USER" || cmd == "PASS")
 	{
-		nickCmd(client, args);
-		return ;
-	}
-	if (cmd == "USER")
-	{
-		userCmd(client, args);
-		return ;
-	}
-	if (cmd == "PASS")
-	{
-		passCmd(client, args);
-		return ;
+		if (cmd == "NICK")
+		{
+			nickCmd(client, args);
+			// return ;
+		}
+		if (cmd == "USER")
+		{
+			userCmd(client, args);
+			// return ;
+		}
+		if (cmd == "PASS")
+		{
+			passCmd(client, args);
+			// return ;
+		}
+		if(client.getRegistryState() && client.getNick() != "" && client.getUser() != "")
+		{
+			//hacer handshake
+			handshake(client);
+		}
 	}
 	// podriamos ponerle un codigo de retorno a los cmds y liego llamar a:
 	// ServerReply(code, client);

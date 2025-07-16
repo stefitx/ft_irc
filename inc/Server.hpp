@@ -63,6 +63,7 @@ class Server
 		// Channel *getOrCreateChannel(const std::string &name);
 
 		void	executeCmd(Client &, std::string cmd, std::vector<std::string> args);
+		void	handshake(Client &client);
 
 		// COMMANDS TO BE RECEIVED
 		void	nickCmd(Client&, std::vector<std::string> args);
