@@ -70,18 +70,17 @@ void Server::passCmd(Client &client, std::vector<std::string> args)
 
 void Server::userCmd(Client &client, std::vector<std::string> args)
 {
-	//std::cout << "USER command received from client fd: " << client.getFd() << std::endl;
-
 	if (args.size() < 4)
 	{
-		std::cerr << "Not enough parameters for USER command from client fd=" << client.getFd() << "\n";
+		// ERR_NEEDMOREPARAMS (461) -> "<command> :Not enough parameters"
+		std::cerr << "[" << client.getFd() << "] USER: Not enough params\n";
 		return;
 	}
 	if (client.getHandShake() == true)
 	{
-		std::cerr << "Client fd=" << client.getFd() << " already registered, ignoring USER command.\n";
+		// ERR_ALREADYREGISTERED (462) -> "<client> :You may not reregister"
+		std::cerr << "[" << client.getFd() << "] USER: already registered\n";
 		return;
 	}
 	client.setUser(args[0]);
-	// To be continued...
 }
