@@ -28,16 +28,6 @@ Server::~Server()
         delete it->second;
 }
 
-void Server::makeSocketNonBlocking(int fd)
-{
-    int flags = fcntl(fd, F_GETFL, 0);
-    if (flags == -1 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
-    {
-        perror("fcntl");
-        exit(EXIT_FAILURE);
-    }
-}
-
 void Server::initListeningSocket()
 {
     int opt;
@@ -48,7 +38,7 @@ void Server::initListeningSocket()
     if (gethostname(hostnameStr, sizeof(hostnameStr)) == -1)
         throw std::runtime_error("initConnection: gethostname()");
     _hostname = hostnameStr;
-    _listenFd = socket(AF_INET, SOCK_STREAM, 0);
+    _listenFd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (_listenFd == -1)
     {
         perror("socket");
@@ -75,8 +65,6 @@ void Server::initListeningSocket()
         exit(EXIT_FAILURE);
     }
 
-    makeSocketNonBlocking(_listenFd);
-
     pfd.fd = _listenFd;
     pfd.events = POLLIN;
     pfd.revents = 0;
@@ -100,7 +88,6 @@ void Server::acceptNewClient()
             return;
         }
 
-        makeSocketNonBlocking(fd);
         _clients[fd] = new Client(fd);
 
         struct pollfd pfd = {fd, POLLIN, 0};
@@ -118,7 +105,7 @@ void Server::handleClientData(size_t idx)
 
     //while (true)
    // {
-        ssize_t bytes = recv(c->getFd(), buf, sizeof(buf), 0);
+        ssize_t bytes = recv(c->getFd(), buf, sizeof(buf), MSG_DONTWAIT);
         if (bytes == -1)
         {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
