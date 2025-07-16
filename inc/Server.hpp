@@ -28,7 +28,25 @@
 #include <stdio.h>
 
 #include "Channel.hpp"
+#include "Colors.h"
 // #include "CommandParser.hpp"
+
+enum CommandType
+{
+	PASS,
+	NICK,
+	USER,
+	QUIT,
+	JOIN,
+	PART,
+	TOPIC,
+	INVITE,
+	KICK,
+	MODE,
+	PRIVMSG
+	// NOTICE
+};
+
 
 class Client;
 
@@ -62,11 +80,13 @@ class Server
 		// Channel *getOrCreateChannel(const std::string &name);
 
 		void	executeCmd(Client &, std::string cmd, std::vector<std::string> args);
+		void	handshake(Client &client);
+		CommandType isComand(const std::string &cmd);
 
 		// COMMANDS TO BE RECEIVED
-		void	nickCmd(Client&, std::vector<std::string> args);
-		void	userCmd(Client&, std::vector<std::string> args);
-		void	passCmd(Client&, std::vector<std::string> args);
+		int	nickCmd(Client&, std::vector<std::string> args);
+		int	userCmd(Client&, std::vector<std::string> args);
+		int	passCmd(Client&, std::vector<std::string> args);
 
 
 	public:
