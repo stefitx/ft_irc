@@ -37,6 +37,7 @@ enum CommandType
 	PASS,
 	NICK,
 	USER,
+	HELP,
 	QUIT,
 	JOIN,
 	PART,
@@ -44,7 +45,9 @@ enum CommandType
 	INVITE,
 	KICK,
 	MODE,
-	PRIVMSG
+	PRIVMSG,
+	OPER,
+	DIE
 	// NOTICE
 };
 
@@ -67,6 +70,7 @@ class Server
 		std::map<std::string, Channel *>	_channels;
 		bool								_running;
 		std::string							_hostname;
+		std::map<std::string, std::string>	_operator_credentials;
 
 		void initListeningSocket();
 		void makeSocketNonBlocking(int fd);
@@ -88,6 +92,8 @@ class Server
 		int	nickCmd(Client&, std::vector<std::string> args);
 		int	userCmd(Client&, std::vector<std::string> args);
 		int	passCmd(Client&, std::vector<std::string> args);
+		int	helpCmd(Client&, std::vector<std::string> args);
+		int operCmd(Client&, std::vector<std::string> args);
 
 
 	public:

@@ -13,7 +13,13 @@
 #include "../inc/Server.hpp"
 
 Server::Server(unsigned short port, const std::string &password)
-    : _port(port), _password(password), _listenFd(-1), _running(false) {}
+    : _port(port), _password(password), _listenFd(-1), _running(false) 
+{
+    _operator_credentials["cris"]  = "mandarino";
+    _operator_credentials["marta"] = "voley";
+    _operator_credentials["stefi"] = "taylor";
+    
+}
 
 Server::~Server()
 {

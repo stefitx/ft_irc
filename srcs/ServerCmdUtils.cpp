@@ -17,6 +17,14 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		std::cout << RED << "[" << code << "] " << RESET << std::endl;
 		return ;
 	}
+	if(isComand(cmd) == HELP)
+		helpCmd(client, args);
+	else if (isComand(cmd) == OPER)
+		code = operCmd(client, args);
+	else if(isComand(cmd) == DIE)
+	{
+		exit(0);
+	}
 	// switch (isComand(cmd))
 	// {
 	// 	case QUIT:
@@ -126,19 +134,121 @@ int Server::userCmd(Client &client, std::vector<std::string> args)
 	return (0);
 }
 
+int Server::helpCmd(Client &client, std::vector<std::string> args)
+{
+	(void)client;
+	//we have to send all the prints to the client
+	if(args.empty())
+	{
+		std::cout << "Commands Available:\n";
+		std::cout << "NICK \t\t USER \t\t PASS \t\t QUIT \n";
+		std::cout << "JOIN \t\t PART \t\t TOPIC \t\t INVITE \n";
+		std::cout << "KICK \t\t MODE \t\t PRIVMSG \t\t OPER\n";
+		std::cout << "Type /WELP <command> for more information, or /WELP -l\n";
+		return;
+	}
+	else if (args[0] == "-l")
+	{
+		std::cout << "Commands Available:\n";
+		std::cout << RED << "NICK" << RESET << " : Usage: NICK <nickname>, sets your nick\n";
+		std::cout << RED << "USER" << RESET << " : Usage: USER <username> <hostname> <servername> :<realname>\n";
+		std::cout << RED << "PASS"<< RESET << " : Usage: PASS <password>\n";
+		std::cout << RED << "QUIT" << RESET << " : Usage: QUIT [<reason>], disconnects from the current server\n";
+		std::cout << RED << "JOIN" << RESET << " : Usage: JOIN <channel>, joins the channel\n";
+		std::cout << RED << "PART" << RESET << " : Usage: PART [<channel>] [<reason>], leaves the channel, by default the current one\n";
+		std::cout << RED << "TOPIC" << RESET << " : Usage: TOPIC [<topic>], sets the topic if one is given, else shows the current topic\n";
+		std::cout << RED << "INVITE" << RESET << " : Usage: INVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\n";
+		std::cout << RED << "KICK" << RESET << " : Usage: KICK <nick> [reason], kicks the nick from the current channel (needs chanop)\n";
+		std::cout << RED << "MODE" << RESET << " : Usage: MODE <channel> [<mode>]\n";
+		std::cout << RED << "PRIVMSG" << RESET << " : Usage: PRIVMSG <target> :<message>\n";
+		std::cout << RED << "OPER" << RESET << " : Usage: OPER <username> <password>, grants operator privileges\n";
+		std::cout << "Type /WELP <command> for more information\n";
+	}
+	else
+	{
+		std::cout << "Command: " << args[0] << "\n";
+		if (args[0] == "NICK" || args[0] == "nick")
+			std::cout << "Usage: NICK <nickname>, sets your nick\n";
+		else if (args[0] == "USER" || args[0] == "user")
+			std::cout << "Usage: USER <username> <hostname> <servername> :<realname>\n";
+		else if (args[0] == "PASS" || args[0] == "pass")
+			std::cout << "Usage: PASS <password>\n";
+		else if (args[0] == "QUIT" || args[0] == "quit")
+			std::cout << "Usage: QUIT [<reason>], disconnects from the current server\n";
+		else if (args[0] == "JOIN" || args[0] == "join")
+			std::cout << "Usage: JOIN <channel>, joins the channel\n";
+		else if (args[0] == "PART" || args[0] == "part")
+			std::cout << "Usage: PART [<channel>] [<reason>], leaves the channel, by default the current one\n";
+		else if (args[0] == "TOPIC" || args[0] == "topic")
+			std::cout << "Usage: TOPIC [<topic>], sets the topic if one is given, else shows the current topic\n";
+		else if (args[0] == "INVITE" || args[0] == "invite")
+			std::cout << "Usage: INVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\n";
+		else if (args[0] == "KICK" || args[0] == "kick")
+			std::cout << "Usage: KICK <nick> [reason], kicks the nick from the current channel (needs chanop)\n";
+		else if (args[0] == "MODE" || args[0] == "mode")
+			std::cout << "Usage: MODE <channel> [<mode>]\n";
+		else if (args[0] == "PRIVMSG" || args[0] == "privmsg")
+			std::cout << "Usage: PRIVMSG <target> :<message>\n";
+		else if (args[0] == "OPER" || args[0] == "oper")
+			std::cout << "Usage: OPER <username> <password>, grants operator privileges\n";
+		else
+		{
+			// ERR_HELPNOTFOUND (524) -> "client> <subject> :No help available on this topic"
+			std::cerr << "[" << client.getFd() << "] HELP: No help available on this topic\n";
+			return (524);
+		}
+	}
+}
+
 CommandType Server::isComand(const std::string &cmd)
 {
 	if (cmd == "PASS") return (PASS);
 	else if (cmd == "NICK") return (NICK);
 	else if (cmd == "USER") return (USER);
 	else if (cmd == "QUIT") return (QUIT);
+	else if (cmd == "HELP" || cmd == "WELP" || cmd == "welp") return (HELP);
 	else if (cmd == "JOIN") return (JOIN);
 	else if (cmd == "PART") return (PART);
 	else if (cmd == "TOPIC") return (TOPIC);
 	else if (cmd == "INVITE") return (INVITE);
 	else if (cmd == "KICK") return (KICK);
 	else if (cmd == "MODE") return (MODE);
+	else if (cmd == "OPER" || cmd == "oper") return (OPER);
 	else if (cmd == "PRIVMSG" || cmd == "privmsg")return (PRIVMSG);
+	else if (cmd == "DIE") return (DIE);
 	else
 		return static_cast<CommandType>(-1); // Unknown command
+}
+
+int Server::operCmd(Client &client, std::vector<std::string> args)
+{
+	//should we cover ERR_NOOPERHOST (491)? (check the hostname/IP of the client)
+	if (args.size() < 2)
+	{
+		// ERR_NEEDMOREPARAMS (461) -> "<command> :Not enough parameters"
+		std::cerr << "[" << client.getFd() << "] OPER: Not enough params\n";
+		return (461);
+	}
+	std::map<std::string, std::string>::iterator	it = _operator_credentials.begin();
+	for(it = _operator_credentials.begin(); it != _operator_credentials.end();)
+	{
+		if (it->first == args[0] && it->second == args[1])
+			// Found the operator credentials
+			break;
+		it++;
+	}
+	if (it == _operator_credentials.end())
+	{
+		// ERR_PASSWDMISMATCH (464) -> "<client> :Password incorrect"
+		std::cerr << "[" << client.getFd() << "] OPER: wrong credentials...\n";
+		return (464);
+	}
+	client.setHandShake(true);
+	client.setRegistryState(true);
+	client.setNick(args[0]);
+	client.setUser(args[0]);
+	client.setServerOper(true);
+	// RPL_YOUREOPER (381) 
+	std::cout << "Client fd " << client.getFd() << " is now an operator :)\n";
+	return (0);
 }

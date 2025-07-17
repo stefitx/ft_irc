@@ -33,6 +33,7 @@ class	Client
 		void					setHandShake(bool state);
 		// void					setChannels(std::map<std::string, Channel> channels);
 		void					setRegistryState(bool state);
+		void					setServerOper(bool state);
 
 		std::string				&getNick();
 		std::string				&getUser();
@@ -42,6 +43,7 @@ class	Client
 		int						&getFd();
 		bool					getRegistryState();
 		bool					getHandShake();
+		bool					getServerOper();
 	private:
 		std::string						nickName;
 		std::string						userName;
@@ -50,6 +52,8 @@ class	Client
 		int								fd;
 		bool							registryState; // correct password, nick, user are set
 		bool							handShake;
+		bool								isServerOper;
+		bool								isChannelOper;
 		// std::map<std::string, Channel>	channels;
 };
 

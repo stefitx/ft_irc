@@ -21,6 +21,8 @@ Client::Client(int fd)
 	this->fd = fd;
 	registryState = false;
 	handShake = false;
+	isServerOper = false;
+	isChannelOper = false;
 	// channels = std::map<std::string, Channel>();
 }
 
@@ -31,8 +33,11 @@ Client::Client(const Client &other) :
 	ip(other.ip),
 	fd(other.fd),
 	registryState(other.registryState),
+
 	// channels(other.channels),
-	handShake(other.handShake)
+	handShake(other.handShake),
+	isServerOper(other.isServerOper),
+	isChannelOper(other.isChannelOper)
 {}
 
 Client::~Client() {}
@@ -46,6 +51,8 @@ Client &Client::operator=(const Client &other)
 		handShake = other.handShake;
 		nickName = other.nickName;
 		userName = other.userName;
+		isServerOper = other.isServerOper;
+		isChannelOper = other.isChannelOper;
 		buffer = other.buffer;
 		ip = other.ip;
 		// channels = other.channels;
@@ -61,6 +68,7 @@ int &Client::getIp() { return ip; }
 int &Client::getFd() { return fd; }
 bool Client::getRegistryState() { return registryState; }
 bool Client::getHandShake() { return handShake; }
+bool Client::getServerOper() { return isServerOper; }
 
 void Client::setNick(std::string nick) { nickName = nick; }
 void Client::setUser(std::string user) { userName = user; }
@@ -70,3 +78,4 @@ void Client::setHost(int host) { ip = host; }
 void Client::setHandShake(bool state) { handShake = state; }
 // void Client::setChannels(std::map<std::string, Channel> channels) { this->channels = channels; }
 void Client::setRegistryState(bool state) { registryState = state; }
+void Client::setServerOper(bool state) { isServerOper = state; }
