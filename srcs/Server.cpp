@@ -12,6 +12,30 @@
 
 #include "../inc/Server.hpp"
 
+bool Server::sendLine(Client &cli, const std::string &line)
+{
+	const char *data;
+	size_t left;
+	ssize_t n;
+
+	data = line.c_str();
+	left = line.size();
+	while (left)
+	{
+		n = send(cli.getFd(), data, left, MSG_DONTWAIT | MSG_NOSIGNAL);
+		if (n == -1)
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				continue;
+			perror("send");
+			return false;
+		}
+		left  -= n;
+		data  += n;
+	}
+	return true;
+}
+
 Server::Server(unsigned short port, const std::string &password)
 	: _port(port), _password(password), _listenFd(-1), _running(false) {}
 
@@ -165,40 +189,38 @@ void Server::removeClient(size_t idx)
 
 void Server::processBuffer(Client *c)
 {
-	std::cout << "[" << c->getFd() << "] RECV line: " << c->getBuffer();
-
 	std::string &buf = c->getBuffer();
 	std::vector<std::string> msgs;
-	while (buf.size())
+	size_t pos;
+
+	while ((pos = buf.find("\r\n")) != std::string::npos)
 	{
-		msgs.push_back(buf.substr(0, buf.find_first_of("\r\n")));
-		buf.erase(0, buf.find_first_of("\r\n") + 2);
+		msgs.push_back(buf.substr(0, pos));
+		buf.erase(0, pos + 2);
 	}
-	for (std::vector<std::string>::iterator it = msgs.begin(); it != msgs.end(); it++)
+	for (std::vector<std::string>::iterator it = msgs.begin(); it != msgs.end(); ++it)
 	{
 		std::istringstream iss(*it);
-		std::string tmp;
+		std::string token;
 		std::vector<std::string> args;
 
-		while (iss >> tmp)
+		while (iss >> token)
 		{
-			if (tmp[0] == ':')
+			if (token[0] == ':')
 			{
-				while (!iss.eof())
-				{
-					std::string tmp_peek;
-					iss >> tmp_peek;
-					tmp += ' ';
-					tmp += tmp_peek;
-				}
+				std::string rest;
+				std::getline(iss, rest);
+				token += rest;
+				if (!token.empty() && token[1] == ' ')
+					token.erase(1, 1);
 			}
-			args.push_back(tmp);
+			args.push_back(token);
 		}
-		if (args.empty())
-			continue;
-		executeCmd(*c, args[0], args);
+		if (!args.empty())
+			executeCmd(*c, args[0], args);
 	}
 }
+
 
 void Server::run()
 {

@@ -4,6 +4,11 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 {
 	int code = 0;
 	args.erase(args.begin());
+	if (!client.getHandShake() && cmd != "PASS" && cmd != "NICK" && cmd != "USER")
+	{
+		reply(client, 451, "", "You have not registered");
+		return;
+	}
 	if(cmd == "NICK" || cmd == "USER" || cmd == "PASS")
 	{
 		if (cmd == "NICK")
@@ -48,97 +53,54 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 	// ServerReply(code, client);
 }
 
-void Server::handshake(Client &client)
+static std::string itoa3(int code)
 {
-	// SEND TO CLIENT THE HANDSHAKE MESSAGE
-	client.setHandShake(true);
-	std::cout << GREEN << "RULE 001 : <client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]" << RESET << std::endl;
-	std::cout << GREEN << "RULE 002 : <client> :Your host is <servername>, running version <version>" << RESET << std::endl;
-	std::cout << GREEN << "RULE 003 : <client> :This server was created <datetime>" << RESET << std::endl;
-	std::cout << GREEN << "RULE 004 : <client> <servername> <version> <available user modes> \n <available channel modes> [<channel modes with a parameter>]" << RESET << std::endl;
-	std::cout << GREEN << "RULE 005 : <client> <1-13 tokens> :are supported by this server" << RESET << std::endl;
+	std::ostringstream oss;
+
+	if (code < 10)
+		oss << "00";
+	else if (code < 100)
+		oss << '0';
+	oss << code;
+	return oss.str();
 }
 
-int    Server::nickCmd(Client &client, std::vector<std::string> args)
+bool Server::reply(Client &cli, int code, const std::string &params, const std::string &text)
 {
-	if (args.size() == 0)
-	{
-		// ERR_NEEDMOREPARAMS (461) -> "<command> :Not enough parameters"
-		std::cerr << "[" << client.getFd() << "] NICK: not enough params" << std::endl;
-		return (461);
-	}
-	std::map<int, Client*>::iterator	it = _clients.begin();
-	while (it != _clients.end())
-	{
-		if (it->second->getNick() == args[0])
-		{
-			// ERR_NICKNAMEINUSE (433) -> "<client> <nick> :Nickname is already in use"
-			std::cerr << "[" << client.getFd() << "] NICK: sorry, nick already in use!\n";
-			return (433);
-		}
-		it++;
-	}
-    client.setNick(args[0]);
-	return (0);
+	std::string line = ":" + _hostname + " " + itoa3(code) + " " + cli.getNick() + " ";
+    if (!params.empty())
+        line += " " + params;
+    if (!text.empty())
+        line += ":" + text;
+    line += "\r\n"; 
+	return (sendLine(cli, line));
 }
 
-int Server::passCmd(Client &client, std::vector<std::string> args)
+void Server::handshake(Client &c)
 {
-	if (client.getRegistryState() == true)
-	{
-		// ERR_ALREADYREGISTERED (462) -> "<client> :You may not reregister"
-		std::cerr << "[" << client.getFd() << "] PASS: stop it, you've already registered\n";
-		return (462);
-	}
-	else if (!args.size())
-	{
-		// ERR_NEEDMOREPARAMS (461) -> "<command> :Not enough parameters"
-		std::cerr << "[" << client.getFd() << "] PASS: empty password!\n";
-		return (461);
-	}
-	else if (args[0] != _password)
-	{
-		// ERR_PASSWDMISMATCH (464) -> "<client> :Password incorrect"
-		std::cerr << "[" << client.getFd() << "] PASS: wrong password...\n";
-		return (464);
-	}
-	client.setRegistryState(true);
-	std::cout << "Client fd " << client.getFd() << " authenticated successfully :)\n";
-	return (0);
+    c.setHandShake(true);
 
+    time_t now = time(NULL);
+    char   datebuf[64];
+
+    strftime(datebuf, sizeof datebuf, "%d-%b-%Y %H:%M:%S %Z", localtime(&now));
+
+    reply(c, 1,  "", "Welcome to the " + _hostname + " Network " + c.getNick() + "!~" + c.getUser() + "@" + _hostname);
+    reply(c, 2,  "", "Your host is " + _hostname + ", running version 0.1");
+    reply(c, 3,  "", "This server was created " + std::string(datebuf));
+    reply(c, 4,  _hostname + " 0.1 aiwro imnptkol", "");
+    reply(c, 5,  "CHANTYPES=# CHANMODES=,ntkl", "are supported by this server");
+
+    std::cout << GREEN << "[fd " << c.getFd() << "] handshake sent" << RESET << '\n';
 }
 
-int Server::userCmd(Client &client, std::vector<std::string> args)
-{
-	if (args.size() < 4)
-	{
-		// ERR_NEEDMOREPARAMS (461) -> "<command> :Not enough parameters"
-		std::cerr << "[" << client.getFd() << "] USER: Not enough params\n";
-		return (461);
-	}
-	if (client.getHandShake() == true)
-	{
-		// ERR_ALREADYREGISTERED (462) -> "<client> :You may not reregister"
-		std::cerr << "[" << client.getFd() << "] USER: already registered\n";
-		return (462);
-	}
-	client.setUser(args[0]);
-	return (0);
-}
-
-CommandType Server::isComand(const std::string &cmd)
-{
-	if (cmd == "PASS") return (PASS);
-	else if (cmd == "NICK") return (NICK);
-	else if (cmd == "USER") return (USER);
-	else if (cmd == "QUIT") return (QUIT);
-	else if (cmd == "JOIN") return (JOIN);
-	else if (cmd == "PART") return (PART);
-	else if (cmd == "TOPIC") return (TOPIC);
-	else if (cmd == "INVITE") return (INVITE);
-	else if (cmd == "KICK") return (KICK);
-	else if (cmd == "MODE") return (MODE);
-	else if (cmd == "PRIVMSG" || cmd == "privmsg")return (PRIVMSG);
-	else
-		return static_cast<CommandType>(-1); // Unknown command
-}
+// void Server::handshake(Client &client)
+// {
+// 	// SEND TO CLIENT THE HANDSHAKE MESSAGE
+// 	client.setHandShake(true);
+// 	std::cout << GREEN << "RULE 001 : <client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]" << RESET << std::endl;
+// 	std::cout << GREEN << "RULE 002 : <client> :Your host is <servername>, running version <version>" << RESET << std::endl;
+// 	std::cout << GREEN << "RULE 003 : <client> :This server was created <datetime>" << RESET << std::endl;
+// 	std::cout << GREEN << "RULE 004 : <client> <servername> <version> <available user modes> \n <available channel modes> [<channel modes with a parameter>]" << RESET << std::endl;
+// 	std::cout << GREEN << "RULE 005 : <client> <1-13 tokens> :are supported by this server" << RESET << std::endl;
+// }

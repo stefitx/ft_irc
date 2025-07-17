@@ -68,7 +68,6 @@ class Server
 		std::string							_hostname;
 
 		void initListeningSocket();
-		void makeSocketNonBlocking(int fd);
 
  		void acceptNewClient();
 		void handleClientData(size_t pollIndex);
@@ -79,6 +78,8 @@ class Server
 		void    processBuffer(Client *c);
 		// Channel *getOrCreateChannel(const std::string &name);
 
+		bool sendLine(Client &cli, const std::string &line);
+		bool reply(Client &cli, int code, const std::string &params, const std::string &text);
 		void	executeCmd(Client &, std::string cmd, std::vector<std::string> args);
 		void	handshake(Client &client);
 		CommandType isComand(const std::string &cmd);
