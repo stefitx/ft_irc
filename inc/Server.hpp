@@ -88,6 +88,7 @@ class Server
 		int	nickCmd(Client&, std::vector<std::string> args);
 		int	userCmd(Client&, std::vector<std::string> args);
 		int	passCmd(Client&, std::vector<std::string> args);
+		int	joinCmd(Client&, std::vector<std::string> args);
 
 
 	public:

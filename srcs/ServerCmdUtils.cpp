@@ -17,6 +17,11 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		std::cout << RED << "[" << code << "] " << RESET << std::endl;
 		return ;
 	}
+	if (cmd == "JOIN")
+	{
+		joinCmd(client, args);
+		return ;
+	}
 	// switch (isComand(cmd))
 	// {
 	// 	case QUIT:
@@ -123,6 +128,35 @@ int Server::userCmd(Client &client, std::vector<std::string> args)
 		return (462);
 	}
 	client.setUser(args[0]);
+	return (0);
+}
+
+int	Server::joinCmd(Client &client, std::vector<std::string> args)
+{
+	(void)client;
+	(void)args;
+	/*if (server._channels.getName() == args[0])
+	{
+			channel already exists
+	}
+	else
+	{	create channel
+			or
+		ERR 403 -> "there is no such channel"
+	}
+	if (client is authorized to join) // cumplen con: key, client limit , ban - exception, invite-only - exception
+	{
+		if ( el num de channels que se ha unido el cliente es < CHANLIMIT RPL_ISUPPORT)
+		{
+			add client to channel
+		}
+		else
+		 	ERR_TOOMANYCHANNELS (405)
+	}
+	else
+		mirar esos codigos de ERR*/
+		
+	// when all is good and done, SEND response to client -> >> @time=2025-07-17T14:09:44.581Z :martalop!~martalop@195.55.43.195 JOIN #hi * :realname
 	return (0);
 }
 
