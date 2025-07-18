@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "../inc/Server.hpp"
+#include "../inc/Client.hpp"
+#include "../inc/Channel.hpp"
 
 Server::Server(unsigned short port, const std::string &password)
     : _port(port), _password(password), _listenFd(-1), _running(false) 

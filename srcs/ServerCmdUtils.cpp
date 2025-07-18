@@ -22,41 +22,51 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		joinCmd(client, args);
 		return ;
 	}
-	if(isComand(cmd) == HELP)
-		helpCmd(client, args);
-	else if (isComand(cmd) == OPER)
-		code = operCmd(client, args);
-	else if(isComand(cmd) == DIE)
+
+	switch (isComand(cmd))
 	{
-		exit(0);
+		case NICK:
+			code = nickCmd(client, args);
+			break;
+		case USER:
+			code = userCmd(client, args);
+			break;
+		case PASS:
+			code = passCmd(client, args);
+			break;
+		case JOIN:
+			// join(client, args);
+			break;
+		case PART:
+			// part(client, args);
+			break;
+		case TOPIC:
+			// topic(client, args);
+			break;
+		case INVITE:
+			// invite(client, args);
+			break;
+		case KICK:
+			// kick(client, args);
+			break;
+		case MODE:
+			// mode(client, args);
+			break;
+		case PRIVMSG:
+			// privmsg(client, args);
+		case OPER:
+			code = operCmd(client, args);
+			break;
+		case HELP:
+			code = helpCmd(client, args);
+			break;
+		case DIE:
+			code = dieCmd(client, args);
+			break;
+		case QUIT:
+			code = quitCmd(client, args);
+			break;
 	}
-	// switch (isComand(cmd))
-	// {
-	// 	case QUIT:
-	// 		// quit(client, args);
-	// 		break;
-	// 	case JOIN:
-	// 		// join(client, args);
-	// 		break;
-	// 	case PART:
-	// 		// part(client, args);
-	// 		break;
-	// 	case TOPIC:
-	// 		// topic(client, args);
-	// 		break;
-	// 	case INVITE:
-	// 		// invite(client, args);
-	// 		break;
-	// 	case KICK:
-	// 		// kick(client, args);
-	// 		break;
-	// 	case MODE:
-	// 		// mode(client, args);
-	// 		break;
-	// 	case PRIVMSG:
-	// 		// privmsg(client, args);
-	// 		break;
-	// }
 	// podriamos ponerle un codigo de retorno a los cmds y liego llamar a:
 	// ServerReply(code, client);
 }
@@ -179,7 +189,6 @@ int Server::helpCmd(Client &client, std::vector<std::string> args)
 		std::cout << "JOIN \t\t PART \t\t TOPIC \t\t INVITE \n";
 		std::cout << "KICK \t\t MODE \t\t PRIVMSG \t\t OPER\n";
 		std::cout << "Type /WELP <command> for more information, or /WELP -l\n";
-		return;
 	}
 	else if (args[0] == "-l")
 	{
@@ -232,7 +241,118 @@ int Server::helpCmd(Client &client, std::vector<std::string> args)
 			return (524);
 		}
 	}
+	return (0);
 }
+
+int Server::operCmd(Client &client, std::vector<std::string> args)
+{
+	//should we cover ERR_NOOPERHOST (491)? (check the hostname/IP of the client)
+	if (args.size() < 2)
+	{
+		// ERR_NEEDMOREPARAMS (461) -> "<command> :Not enough parameters"
+		std::cerr << "[" << client.getFd() << "] OPER: Not enough params\n";
+		return (461);
+	}
+	std::map<std::string, std::string>::iterator	it;
+	for(it = _operator_credentials.begin(); it != _operator_credentials.end();)
+	{
+		if (it->first == args[0] && it->second == args[1])
+			break;
+		it++;
+	}
+	if (it == _operator_credentials.end())
+	{
+		// ERR_PASSWDMISMATCH (464) -> "<client> :Password incorrect"
+		std::cerr << "[" << client.getFd() << "] OPER: wrong credentials...\n";
+		return (464);
+	}
+	client.setNick(args[0]);
+	client.setUser(args[0]);
+	client.setServerOper(true);
+	// RPL_YOUREOPER (381) 
+	std::cout << "Client fd " << client.getFd() << " is now an operator :)\n";
+	return (0);
+}
+
+int Server::dieCmd(Client &client, std::vector<std::string> args)
+{
+	(void)args;
+	if (client.getServerOper() == false)
+	{
+		// ERR_NOPRIVILEGES (481) -> "<client> :Permission Denied- You're not an IRC operator"
+		std::cerr << "[" << client.getFd() << "] DIE: You are not an operator!\n";
+		return (481);
+	}
+	std::map<int, Client *>::iterator it;
+	for(it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		// Notify each client about the server shutdown with a SEND
+		std::cout << "Notifying client fd " << it->second->getFd() << " about server shutdown...\n";
+	}
+	exit(0);
+	return (0);
+}
+
+int Server::quitCmd(Client &client, std::vector<std::string> args)
+{
+	for (std::map<std::string, Channel>::iterator it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
+        Channel* chan = get_channel(*it);
+        if (chan) {
+			std::string quit_line = ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " QUIT :" + (args.empty() ? "Leaving" : args[0]);
+			// Notify all clients in the channel about the quit
+			chan->broadcast(quit_line, client);
+
+			// Remove the client from the channel
+            chan->remove_user(&client);
+        }
+    }
+	disconnectClient(client);
+	return (0);
+}
+
+void Server::disconnectClient(Client &client)
+{
+	std::cout << "Disconnecting client fd " << client.getFd() << "...\n";
+
+	// Remove the client from all channels they are part of
+	std::map<std::string, Channel> channels = client.getChannels();	
+
+    for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
+        Channel* chan = get_channel(*it);
+        if (chan) {
+            chan->remove_user(&client);
+			// Send to client in channel
+			std::cout << "Disconnected ()\n";
+            // Optionally broadcast PART or QUIT here
+        }
+    }
+	_clients.erase(client.getFd());
+	close(client.getFd());
+	std::vector<struct pollfd>::iterator it = _pollFds.begin();
+	for(size_t idx = 0; idx < _pollFds.size(); ++idx, ++it)
+	{
+		if (it->fd == client.getFd())
+		{
+			_pollFds.erase(it);
+			break;
+		}
+	}
+	std::cout << "Client fd " << client.getFd() << " disconnected successfully.\n";
+}
+
+Channel *Server::get_channel(const std::pair<std::string, Channel> &pair)
+{
+	std::map<std::string, Channel *>::iterator it = _channels.find(pair.first);
+	if (it != _channels.end())
+		return it->second;
+	else
+	{
+		
+		return it->second;
+	}
+}
+
+
 
 CommandType Server::isComand(const std::string &cmd)
 {
@@ -252,37 +372,4 @@ CommandType Server::isComand(const std::string &cmd)
 	else if (cmd == "DIE") return (DIE);
 	else
 		return static_cast<CommandType>(-1); // Unknown command
-}
-
-int Server::operCmd(Client &client, std::vector<std::string> args)
-{
-	//should we cover ERR_NOOPERHOST (491)? (check the hostname/IP of the client)
-	if (args.size() < 2)
-	{
-		// ERR_NEEDMOREPARAMS (461) -> "<command> :Not enough parameters"
-		std::cerr << "[" << client.getFd() << "] OPER: Not enough params\n";
-		return (461);
-	}
-	std::map<std::string, std::string>::iterator	it = _operator_credentials.begin();
-	for(it = _operator_credentials.begin(); it != _operator_credentials.end();)
-	{
-		if (it->first == args[0] && it->second == args[1])
-			// Found the operator credentials
-			break;
-		it++;
-	}
-	if (it == _operator_credentials.end())
-	{
-		// ERR_PASSWDMISMATCH (464) -> "<client> :Password incorrect"
-		std::cerr << "[" << client.getFd() << "] OPER: wrong credentials...\n";
-		return (464);
-	}
-	client.setHandShake(true);
-	client.setRegistryState(true);
-	client.setNick(args[0]);
-	client.setUser(args[0]);
-	client.setServerOper(true);
-	// RPL_YOUREOPER (381) 
-	std::cout << "Client fd " << client.getFd() << " is now an operator :)\n";
-	return (0);
 }

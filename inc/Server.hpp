@@ -28,8 +28,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "Channel.hpp"
 #include "Colors.h"
+#include "Client.hpp"
+#include "Channel.hpp"
 // #include "CommandParser.hpp"
 
 enum CommandType
@@ -87,6 +88,8 @@ class Server
 		void	executeCmd(Client &, std::string cmd, std::vector<std::string> args);
 		void	handshake(Client &client);
 		CommandType isComand(const std::string &cmd);
+		Channel *get_channel(const std::pair<std::string, Channel> &pair);
+		void	disconnectClient(Client &client);
 
 		// COMMANDS TO BE RECEIVED
 		int	nickCmd(Client&, std::vector<std::string> args);
@@ -95,6 +98,8 @@ class Server
 		int	joinCmd(Client&, std::vector<std::string> args);
 		int	helpCmd(Client&, std::vector<std::string> args);
 		int operCmd(Client&, std::vector<std::string> args);
+		int dieCmd(Client&, std::vector<std::string> args);
+		int quitCmd(Client&, std::vector<std::string> args);
 
 
 	public:

@@ -1,4 +1,5 @@
 #include "../inc/Channel.hpp"
+# include "../inc/Client.hpp"
 
 Channel::Channel(std::string name) {
 	this->name = name;
@@ -9,7 +10,20 @@ Channel::Channel(std::string name) {
 	privileges.clear();
 	mode.clear();
 	accessType = "";
+	clients = std::map<int, Client *>();
 }
+
+Channel::Channel(const Channel &other) :
+	name(other.name),
+	privileges(other.privileges),
+	clientNum(other.clientNum),
+	topic(other.topic),
+	userLimit(other.userLimit),
+	password(other.password),
+	mode(other.mode),
+	accessType(other.accessType),
+	clients(other.clients)
+{}
 
 Channel::~Channel() {}
 
@@ -23,6 +37,23 @@ Channel &Channel::operator=(const Channel &other) {
 		privileges = other.privileges;
 		mode = other.mode;
 		accessType = other.accessType;
+		clients = other.clients;
 	}
 	return *this;
+}
+
+void	Channel::broadcast(std::string msg, Client &except)
+{
+	for(std::map<int, Client *>::iterator it = clients.begin(); it != clients.end(); ++it)
+	{
+		if (it->first != except.getFd()) // Don't send the message back to the sender
+		{
+			std::cout << msg << std::endl;
+		}
+	}
+}
+
+void Channel::remove_user(Client* client)
+{
+    clients.erase(client->getFd());
 }

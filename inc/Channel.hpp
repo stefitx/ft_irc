@@ -5,6 +5,8 @@
 # include <map>
 # include "Client.hpp"
 
+class Client;
+
 class	Channel
 {
 	public:
@@ -13,9 +15,10 @@ class	Channel
 		~Channel();
 
 		Channel	&operator=(const Channel&);
+		void				broadcast(std::string msg, Client &client);
+		void remove_user(Client* client);
 	private:
 		std::string			name;
-		// std::map<int, Client>	clients; // int fd of the client
 		std::vector<std::string>	privileges;
 		// los privilegios van relacionados con los clientes -> look for a better container
 		int				clientNum;
@@ -25,4 +28,5 @@ class	Channel
 		std::vector<int>		mode;
 		// again, not sure which container to use
 		std::string			accessType; // muy relacionado con 'mode'
+		std::map<int, Client *>	clients; // map of clients in the channel
 };
