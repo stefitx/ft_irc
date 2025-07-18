@@ -295,7 +295,8 @@ int Server::dieCmd(Client &client, std::vector<std::string> args)
 
 int Server::quitCmd(Client &client, std::vector<std::string> args)
 {
-	for (std::map<std::string, Channel>::iterator it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
+	std::map<std::string, Channel>::iterator it;
+	for (it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
         Channel* chan = get_channel(*it);
         if (chan) {
 			std::string quit_line = ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " QUIT :" + (args.empty() ? "Leaving" : args[0]);
