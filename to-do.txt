@@ -1,1 +1,18 @@
-NICK: 
+NICK:	- Decidir si comprobar nicks de gente que no han hecho el handshake
+USER:	- Guardar el resto de args
+		- Mirar que onda con el 0 * y el * 0 ( parseo )
+HELP ✅​
+JOIN
+└ TOPIC
+└ INVITE
+└ PART
+└ MODE
+└ KICK
+PRIVMSG
+KILL : Forcibly removes <client> from the network.
+QUIT : Disconnects the user from the server.
+DIE : who is server operator? Instructs the server to shut down.
+------
+LIST
+NAMES
+ADMIN

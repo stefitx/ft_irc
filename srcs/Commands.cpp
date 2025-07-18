@@ -2,6 +2,85 @@
 #include "../inc/Client.hpp"
 #include "../inc/Channel.hpp"
 
+void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string> args)
+{
+	int code = 0;
+	args.erase(args.begin());
+	if (!client.getHandShake() && cmd != "PASS" && cmd != "NICK" && cmd != "USER")
+	{
+		reply(client, 451, "", "You have not registered");
+		return;
+	}
+	if(cmd == "NICK" || cmd == "USER" || cmd == "PASS")
+	{
+		if (cmd == "NICK")
+			code = nickCmd(client, args);
+		else if (cmd == "USER")
+			code = userCmd(client, args);
+		else if (cmd == "PASS")
+			code = passCmd(client, args);
+		if((client.getRegistryState() && client.getNick() != "" && client.getUser() != "") && !client.getHandShake())
+			handshake(client);
+		std::cout << RED << "[" << code << "] " << RESET << std::endl;
+		return ;
+	}
+	switch (isCommand(cmd))
+	{
+		case NICK:
+			code = nickCmd(client, args);
+			break;
+		case USER:
+			code = userCmd(client, args);
+			break;
+		case PASS:
+			code = passCmd(client, args);
+			break;
+		case JOIN:
+			code = joinCmd(client, args);
+			break;
+		case PART:
+			// part(client, args);
+			break;
+		case TOPIC:
+			// topic(client, args);
+			break;
+		case INVITE:
+			// invite(client, args);
+			break;
+		case KICK:
+			// kick(client, args);
+			break;
+		case MODE:
+			// mode(client, args);
+			break;
+		case PRIVMSG:
+			// privmsg(client, args);
+		case OPER:
+			code = operCmd(client, args);
+			break;
+		case HELP:
+			code = helpCmd(client, args);
+			break;
+		case DIE:
+			code = dieCmd(client, args);
+			break;
+		case QUIT:
+			code = quitCmd(client, args);
+			break;
+		default:
+		{
+			if (client.getRegistryState())
+			{
+				// ERR_UNKNOWNCOMMAND (421) (send to client)
+				std::cout << cmd << ": Unknow command\n";
+			}
+		}
+	}
+
+	// podriamos ponerle un codigo de retorno a los cmds y liego llamar a:
+	// ServerReply(code, client);
+}
+
 int    Server::nickCmd(Client &client, std::vector<std::string> args)
 {
 	if (args.empty())
@@ -41,19 +120,275 @@ int Server::userCmd(Client &client, std::vector<std::string> args)
 	return (0);
 }
 
-CommandType Server::isComand(const std::string &cmd)
+
+std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::string> args)
+{
+	(void)args;
+	std::map<std::string, std::string>	*channel_joins;
+	std::map<std::string, std::string>::iterator	map_it;
+	std::vector<std::string>::iterator				args_it;	
+
+	channel_joins = new std::map<std::string, std::string>;
+	args_it = args.begin();
+	while (args_it != args.end())
+	{
+		// if ()
+		// {
+
+		// }
+		args_it++;
+	}
+
+	return (channel_joins);
+}
+
+int	Server::joinCmd(Client &client, std::vector<std::string> args)
+{
+	(void)args;
+	std::map<std::string, std::string>	*joins;
+	
+	if (!client.getRegistryState())
+	{
+		//ERR_NOTREGISTERED (451) 
+		std::cout << "You haven't registered yet!\n";
+		return (451);
+	}
+	joins = parseJoinArgs(args);
+	if (!joins)
+		return (0);
+	std::map<std::string, std::string>::iterator	it = joins->begin();
+	while (it != joins->end())
+	{
+		/*if (!it->second.size())	
+		{
+			// ERR_NEEDMOREPARAMS (461) -> "<command> :Not enough parameters"
+			std::cerr << "[" << client.getFd() << "] JOIN: Not enough params\n";
+			return (461);
+		}
+		if (args.size() == 0 && args[0] == "0")
+		{
+			partCmd(client, NULL);
+			return (NULL);
+		}
+		if (server._channels.getName() == args[0])
+		{
+				channel already exists
+		}
+		else if (args[0][0] != '#')
+			ERR 403 -> "there is no such channel"
+		else
+			create channel + make client operator
+
+		if (client is authorized to join) // cumplen con: key, client limit , ban - exception, invite-only - exception
+		{
+			if ( el num de channels que se ha unido el cliente es < CHANLIMIT RPL_ISUPPORT)
+			{
+				add client to channel
+			}
+			else
+				ERR_TOOMANYCHANNELS (405)
+		}
+		else
+			mirar esos codigos de ERR*/
+		it++;
+	}	
+	delete joins;
+	// when all is good and done, SEND various responses to client
+	return (0);
+}
+
+int Server::helpCmd(Client &client, std::vector<std::string> args)
+{
+	(void)client;
+	//we have to send all the prints to the client
+	if(args.empty())
+	{
+		std::cout << "Commands Available:\n";
+		std::cout << "NICK \t\t USER \t\t PASS \t\t QUIT \n";
+		std::cout << "JOIN \t\t PART \t\t TOPIC \t\t INVITE \n";
+		std::cout << "KICK \t\t MODE \t\t PRIVMSG \t\t OPER\n";
+		std::cout << "Type /WELP <command> for more information, or /WELP -l\n";
+	}
+	else if (args[0] == "-l")
+	{
+		std::cout << "Commands Available:\n";
+		std::cout << RED << "NICK" << RESET << " : Usage: NICK <nickname>, sets your nick\n";
+		std::cout << RED << "USER" << RESET << " : Usage: USER <username> <hostname> <servername> :<realname>\n";
+		std::cout << RED << "PASS"<< RESET << " : Usage: PASS <password>\n";
+		std::cout << RED << "QUIT" << RESET << " : Usage: QUIT [<reason>], disconnects from the current server\n";
+		std::cout << RED << "JOIN" << RESET << " : Usage: JOIN <channel>, joins the channel\n";
+		std::cout << RED << "PART" << RESET << " : Usage: PART [<channel>] [<reason>], leaves the channel, by default the current one\n";
+		std::cout << RED << "TOPIC" << RESET << " : Usage: TOPIC [<topic>], sets the topic if one is given, else shows the current topic\n";
+		std::cout << RED << "INVITE" << RESET << " : Usage: INVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\n";
+		std::cout << RED << "KICK" << RESET << " : Usage: KICK <nick> [reason], kicks the nick from the current channel (needs chanop)\n";
+		std::cout << RED << "MODE" << RESET << " : Usage: MODE <channel> [<mode>]\n";
+		std::cout << RED << "PRIVMSG" << RESET << " : Usage: PRIVMSG <target> :<message>\n";
+		std::cout << RED << "OPER" << RESET << " : Usage: OPER <username> <password>, grants operator privileges\n";
+		std::cout << "Type /WELP <command> for more information\n";
+	}
+	else
+	{
+		std::cout << "Command: " << args[0] << "\n";
+		if (args[0] == "NICK" || args[0] == "nick")
+			std::cout << "Usage: NICK <nickname>, sets your nick\n";
+		else if (args[0] == "USER" || args[0] == "user")
+			std::cout << "Usage: USER <username> <hostname> <servername> :<realname>\n";
+		else if (args[0] == "PASS" || args[0] == "pass")
+			std::cout << "Usage: PASS <password>\n";
+		else if (args[0] == "QUIT" || args[0] == "quit")
+			std::cout << "Usage: QUIT [<reason>], disconnects from the current server\n";
+		else if (args[0] == "JOIN" || args[0] == "join")
+			std::cout << "Usage: JOIN <channel>, joins the channel\n";
+		else if (args[0] == "PART" || args[0] == "part")
+			std::cout << "Usage: PART [<channel>] [<reason>], leaves the channel, by default the current one\n";
+		else if (args[0] == "TOPIC" || args[0] == "topic")
+			std::cout << "Usage: TOPIC [<topic>], sets the topic if one is given, else shows the current topic\n";
+		else if (args[0] == "INVITE" || args[0] == "invite")
+			std::cout << "Usage: INVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\n";
+		else if (args[0] == "KICK" || args[0] == "kick")
+			std::cout << "Usage: KICK <nick> [reason], kicks the nick from the current channel (needs chanop)\n";
+		else if (args[0] == "MODE" || args[0] == "mode")
+			std::cout << "Usage: MODE <channel> [<mode>]\n";
+		else if (args[0] == "PRIVMSG" || args[0] == "privmsg")
+			std::cout << "Usage: PRIVMSG <target> :<message>\n";
+		else if (args[0] == "OPER" || args[0] == "oper")
+			std::cout << "Usage: OPER <username> <password>, grants operator privileges\n";
+		else
+		{
+			// ERR_HELPNOTFOUND (524) -> "client> <subject> :No help available on this topic"
+			std::cerr << "[" << client.getFd() << "] HELP: No help available on this topic\n";
+			return (524);
+		}
+	}
+	return (0);
+}
+
+int Server::operCmd(Client &client, std::vector<std::string> args)
+{
+	//should we cover ERR_NOOPERHOST (491)? (check the hostname/IP of the client)
+	if (args.size() < 2)
+	{
+		// ERR_NEEDMOREPARAMS (461) -> "<command> :Not enough parameters"
+		std::cerr << "[" << client.getFd() << "] OPER: Not enough params\n";
+		return (461);
+	}
+	std::map<std::string, std::string>::iterator	it;
+	for(it = _operator_credentials.begin(); it != _operator_credentials.end();)
+	{
+		if (it->first == args[0] && it->second == args[1])
+			break;
+		it++;
+	}
+	if (it == _operator_credentials.end())
+	{
+		// ERR_PASSWDMISMATCH (464) -> "<client> :Password incorrect"
+		std::cerr << "[" << client.getFd() << "] OPER: wrong credentials...\n";
+		return (464);
+	}
+	client.setNick(args[0]);
+	client.setUser(args[0]);
+	client.setServerOper(true);
+	// RPL_YOUREOPER (381) 
+	std::cout << "Client fd " << client.getFd() << " is now an operator :)\n";
+	return (0);
+}
+
+int Server::dieCmd(Client &client, std::vector<std::string> args)
+{
+	(void)args;
+	if (client.getServerOper() == false)
+	{
+		// ERR_NOPRIVILEGES (481) -> "<client> :Permission Denied- You're not an IRC operator"
+		std::cerr << "[" << client.getFd() << "] DIE: You are not an operator!\n";
+		return (481);
+	}
+	std::map<int, Client *>::iterator it;
+	for(it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		// Notify each client about the server shutdown with a SEND
+		std::cout << "Notifying client fd " << it->second->getFd() << " about server shutdown...\n";
+	}
+	exit(0);
+	return (0);
+}
+
+int Server::quitCmd(Client &client, std::vector<std::string> args)
+{
+	std::map<std::string, Channel>::iterator it;
+	for (it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
+        Channel* chan = get_channel(*it);
+        if (chan) {
+			std::string quit_line = ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " QUIT :" + (args.empty() ? "Leaving" : args[0]);
+			// Notify all clients in the channel about the quit
+			chan->broadcast(quit_line, client);
+
+			// Remove the client from the channel
+            chan->remove_user(&client);
+        }
+    }
+	disconnectClient(client);
+	return (0);
+}
+
+void Server::disconnectClient(Client &client)
+{
+	std::cout << "Disconnecting client fd " << client.getFd() << "...\n";
+
+	// Remove the client from all channels they are part of
+	std::map<std::string, Channel> channels = client.getChannels();	
+
+    for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
+        Channel* chan = get_channel(*it);
+        if (chan) {
+            chan->remove_user(&client);
+			// Send to client in channel
+			std::cout << "Disconnected ()\n";
+            // Optionally broadcast PART or QUIT here
+        }
+    }
+	_clients.erase(client.getFd());
+	close(client.getFd());
+	std::vector<struct pollfd>::iterator it = _pollFds.begin();
+	for(size_t idx = 0; idx < _pollFds.size(); ++idx, ++it)
+	{
+		if (it->fd == client.getFd())
+		{
+			_pollFds.erase(it);
+			break;
+		}
+	}
+	std::cout << "Client fd " << client.getFd() << " disconnected successfully.\n";
+}
+
+Channel *Server::get_channel(const std::pair<std::string, Channel> &pair)
+{
+	std::map<std::string, Channel *>::iterator it = _channels.find(pair.first);
+	if (it != _channels.end())
+		return it->second;
+	else
+	{
+		
+		return it->second;
+	}
+}
+
+CommandType Server::isCommand(const std::string &cmd)
 {
 	if (cmd == "PASS") return (PASS);
 	else if (cmd == "NICK") return (NICK);
 	else if (cmd == "USER") return (USER);
 	else if (cmd == "QUIT") return (QUIT);
+	else if (cmd == "HELP" || cmd == "WELP" || cmd == "welp") return (HELP);
 	else if (cmd == "JOIN") return (JOIN);
 	else if (cmd == "PART") return (PART);
 	else if (cmd == "TOPIC") return (TOPIC);
 	else if (cmd == "INVITE") return (INVITE);
 	else if (cmd == "KICK") return (KICK);
 	else if (cmd == "MODE") return (MODE);
+	else if (cmd == "OPER" || cmd == "oper") return (OPER);
 	else if (cmd == "PRIVMSG" || cmd == "privmsg")return (PRIVMSG);
+	else if (cmd == "DIE") return (DIE);
 	else
 		return static_cast<CommandType>(-1); // Unknown command
 }
+

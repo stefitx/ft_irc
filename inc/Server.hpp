@@ -27,8 +27,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "Channel.hpp"
 #include "Colors.h"
+#include "Client.hpp"
+#include "Channel.hpp"
 // #include "CommandParser.hpp"
 
 enum CommandType
@@ -36,6 +37,7 @@ enum CommandType
 	PASS,
 	NICK,
 	USER,
+	HELP,
 	QUIT,
 	JOIN,
 	PART,
@@ -43,7 +45,9 @@ enum CommandType
 	INVITE,
 	KICK,
 	MODE,
-	PRIVMSG
+	PRIVMSG,
+	OPER,
+	DIE
 	// NOTICE
 };
 
@@ -66,6 +70,7 @@ class Server
 		std::map<std::string, Channel *>	_channels;
 		bool								_running;
 		std::string							_hostname;
+		std::map<std::string, std::string>	_operator_credentials;
 
 		void initListeningSocket();
 
@@ -82,12 +87,20 @@ class Server
 		bool reply(Client &cli, int code, const std::string &params, const std::string &text);
 		void	executeCmd(Client &, std::string cmd, std::vector<std::string> args);
 		void	handshake(Client &client);
-		CommandType isComand(const std::string &cmd);
+		CommandType isCommand(const std::string &cmd);
+		Channel *get_channel(const std::pair<std::string, Channel> &pair);
+		void	disconnectClient(Client &client);
 
 		// COMMANDS TO BE RECEIVED
 		int	nickCmd(Client&, std::vector<std::string> args);
 		int	userCmd(Client&, std::vector<std::string> args);
 		int	passCmd(Client&, std::vector<std::string> args);
+		std::map<std::string, std::string>	*parseJoinArgs(std::vector<std::string> args);
+		int	joinCmd(Client&, std::vector<std::string> args);
+		int	helpCmd(Client&, std::vector<std::string> args);
+		int operCmd(Client&, std::vector<std::string> args);
+		int dieCmd(Client&, std::vector<std::string> args);
+		int quitCmd(Client&, std::vector<std::string> args);
 
 
 	public:

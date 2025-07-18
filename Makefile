@@ -22,7 +22,7 @@ SRC_NAMES	:=	main.cpp \
 				Server.cpp \
 				Client.cpp \
 				Channel.cpp \
-				ServerCmdUtils.cpp \
+				Handshake.cpp \
 				Commands.cpp
 
 SRC			:= $(addprefix $(SRC_DIR), $(SRC_NAMES))

@@ -13,8 +13,9 @@
 #pragma once
 
 # include <iostream>
-# include "Channel.hpp"
 # include "Server.hpp"
+
+class Channel;
 
 class	Client
 {
@@ -31,17 +32,19 @@ class	Client
 		void					setFd(int fd);
 		void					setHost(int host);
 		void					setHandShake(bool state);
-		// void					setChannels(std::map<std::string, Channel> channels);
+		void					setChannels(std::map<std::string, Channel> channels);
 		void					setRegistryState(bool state);
+		void					setServerOper(bool state);
 
 		std::string				&getNick();
 		std::string				&getUser();
 		std::string				&getBuffer();
-		// std::map<std::string, Channel>	getChannels() const;
+		std::map<std::string, Channel>	getChannels() const;
 		int						&getIp();
 		int						&getFd();
 		bool					getRegistryState();
 		bool					getHandShake();
+		bool					getServerOper();
 	private:
 		std::string						nickName;
 		std::string						userName;
@@ -50,6 +53,8 @@ class	Client
 		int								fd;
 		bool							registryState; // correct password, nick, user are set
 		bool							handShake;
-		// std::map<std::string, Channel>	channels;
+		bool								isServerOper;
+		bool								isChannelOper;
+		std::map<std::string, Channel>	channels;
 };
 

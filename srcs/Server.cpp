@@ -11,33 +11,17 @@
 /* ************************************************************************** */
 
 #include "../inc/Server.hpp"
-
-bool Server::sendLine(Client &cli, const std::string &line)
-{
-	const char *data;
-	size_t left;
-	ssize_t n;
-
-	data = line.c_str();
-	left = line.size();
-	while (left)
-	{
-		n = send(cli.getFd(), data, left, MSG_DONTWAIT | MSG_NOSIGNAL);
-		if (n == -1)
-		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				continue;
-			perror("send");
-			return false;
-		}
-		left  -= n;
-		data  += n;
-	}
-	return true;
-}
+#include "../inc/Client.hpp"
+#include "../inc/Channel.hpp"
 
 Server::Server(unsigned short port, const std::string &password)
-	: _port(port), _password(password), _listenFd(-1), _running(false) {}
+    : _port(port), _password(password), _listenFd(-1), _running(false) 
+{
+    _operator_credentials["cris"]  = "mandarino";
+    _operator_credentials["marta"] = "voley";
+    _operator_credentials["stefi"] = "taylor";
+    
+}
 
 Server::~Server()
 {
