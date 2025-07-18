@@ -17,12 +17,6 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		std::cout << RED << "[" << code << "] " << RESET << std::endl;
 		return ;
 	}
-	if (cmd == "JOIN")
-	{
-		joinCmd(client, args);
-		return ;
-	}
-
 	switch (isComand(cmd))
 	{
 		case NICK:
@@ -35,7 +29,7 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 			code = passCmd(client, args);
 			break;
 		case JOIN:
-			// join(client, args);
+			code = joinCmd(client, args);
 			break;
 		case PART:
 			// part(client, args);
@@ -66,7 +60,16 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		case QUIT:
 			code = quitCmd(client, args);
 			break;
+		default:
+		{
+			if (client.getRegistryState())
+			{
+				// ERR_UNKNOWNCOMMAND (421) (send to client)
+				std::cout << cmd << ": Unknow command\n";
+			}
+		}
 	}
+
 	// podriamos ponerle un codigo de retorno a los cmds y liego llamar a:
 	// ServerReply(code, client);
 }
@@ -149,32 +152,79 @@ int Server::userCmd(Client &client, std::vector<std::string> args)
 	return (0);
 }
 
+std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::string> args)
+{
+	(void)args;
+	std::map<std::string, std::string>	*channel_joins;
+	std::map<std::string, std::string>::iterator	map_it;
+	std::vector<std::string>::iterator				args_it;	
+
+	channel_joins = new std::map<std::string, std::string>;
+	args_it = args.begin();
+	while (args_it != args.end())
+	{
+		// if ()
+		// {
+
+		// }
+		args_it++;
+	}
+
+	return (channel_joins);
+}
+
 int	Server::joinCmd(Client &client, std::vector<std::string> args)
 {
-	(void)client;
 	(void)args;
-	/*if (server._channels.getName() == args[0])
+	std::map<std::string, std::string>	*joins;
+	
+	if (!client.getRegistryState())
 	{
-			channel already exists
+		//ERR_NOTREGISTERED (451) 
+		std::cout << "You haven't registered yet!\n";
+		return (451);
 	}
-	else
-	{	create channel
-			or
-		ERR 403 -> "there is no such channel"
-	}
-	if (client is authorized to join) // cumplen con: key, client limit , ban - exception, invite-only - exception
+	joins = parseJoinArgs(args);
+	if (!joins)
+		return (0);
+	std::map<std::string, std::string>::iterator	it = joins->begin();
+	while (it != joins->end())
 	{
-		if ( el num de channels que se ha unido el cliente es < CHANLIMIT RPL_ISUPPORT)
+		/*if (!it->second.size())	
 		{
-			add client to channel
+			// ERR_NEEDMOREPARAMS (461) -> "<command> :Not enough parameters"
+			std::cerr << "[" << client.getFd() << "] JOIN: Not enough params\n";
+			return (461);
+		}
+		if (args.size() == 0 && args[0] == "0")
+		{
+			partCmd(client, NULL);
+			return (NULL);
+		}
+		if (server._channels.getName() == args[0])
+		{
+				channel already exists
+		}
+		else if (args[0][0] != '#')
+			ERR 403 -> "there is no such channel"
+		else
+			create channel + make client operator
+
+		if (client is authorized to join) // cumplen con: key, client limit , ban - exception, invite-only - exception
+		{
+			if ( el num de channels que se ha unido el cliente es < CHANLIMIT RPL_ISUPPORT)
+			{
+				add client to channel
+			}
+			else
+				ERR_TOOMANYCHANNELS (405)
 		}
 		else
-		 	ERR_TOOMANYCHANNELS (405)
-	}
-	else
-		mirar esos codigos de ERR*/
-		
-	// when all is good and done, SEND response to client -> >> @time=2025-07-17T14:09:44.581Z :martalop!~martalop@195.55.43.195 JOIN #hi * :realname
+			mirar esos codigos de ERR*/
+		it++;
+	}	
+	delete joins;
+	// when all is good and done, SEND various responses to client
 	return (0);
 }
 

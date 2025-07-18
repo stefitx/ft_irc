@@ -95,6 +95,7 @@ class Server
 		int	nickCmd(Client&, std::vector<std::string> args);
 		int	userCmd(Client&, std::vector<std::string> args);
 		int	passCmd(Client&, std::vector<std::string> args);
+		std::map<std::string, std::string>	*parseJoinArgs(std::vector<std::string> args);
 		int	joinCmd(Client&, std::vector<std::string> args);
 		int	helpCmd(Client&, std::vector<std::string> args);
 		int operCmd(Client&, std::vector<std::string> args);
