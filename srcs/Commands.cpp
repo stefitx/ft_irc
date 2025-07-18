@@ -76,9 +76,7 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 			}
 		}
 	}
-
-	// podriamos ponerle un codigo de retorno a los cmds y liego llamar a:
-	// ServerReply(code, client);
+	// ServerErrReply(code, client);
 }
 
 int    Server::nickCmd(Client &client, std::vector<std::string> args)
@@ -120,26 +118,41 @@ int Server::userCmd(Client &client, std::vector<std::string> args)
 	return (0);
 }
 
+std::vector<std::string> vectorSplit(const std::string& str, char delim) 
+{
+    std::vector<std::string> tokens;
+    std::string token;
+    std::stringstream ss(str);
+
+    while (std::getline(ss, token, delim)) 
+	{
+        tokens.push_back(token);
+    }
+    return (tokens);
+}
+
 
 std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::string> args)
 {
-	(void)args;
-	std::map<std::string, std::string>	*channel_joins;
-	std::map<std::string, std::string>::iterator	map_it;
-	std::vector<std::string>::iterator				args_it;	
+	std::map<std::string, std::string>	*joins;
+	joins = new std::map<std::string, std::string>;
 
-	channel_joins = new std::map<std::string, std::string>;
-	args_it = args.begin();
-	while (args_it != args.end())
+	std::vector<std::string> channels = vectorSplit(args[0], ',');
+    std::vector<std::string> keys;
+    if (args.size() > 1)
+		keys = vectorSplit(args[1], ',');
+	std::string	channelKey;
+    for (size_t i = 0; i < channels.size(); ++i) 
 	{
-		// if ()
-		// {
-
-		// }
-		args_it++;
+		if (i < keys.size())
+			channelKey = keys[i];
+		else
+			channelKey = "";
+        (*joins)[channels[i]] = channelKey;
+		//joins[channels[i]].insert(channelKey);
+		std::cout << "channel " << channels[i] << ", key: " << channelKey << std::endl;
 	}
-
-	return (channel_joins);
+	return (joins);
 }
 
 int	Server::joinCmd(Client &client, std::vector<std::string> args)
@@ -153,32 +166,36 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		std::cout << "You haven't registered yet!\n";
 		return (451);
 	}
+	if (!args.size())
+		return reply(client, 461, "", "] JOIN: Not enough params") ? 0 : -1;
+	if (args.size() == 1 && args[0] == "0")
+	{
+		//partCmd(client, NULL);
+		std::cout << "should be parting from all channels he is in\n";
+		return (0);
+	}
 	joins = parseJoinArgs(args);
 	if (!joins)
 		return (0);
-	std::map<std::string, std::string>::iterator	it = joins->begin();
-	while (it != joins->end())
+	std::map<std::string, std::string>::iterator	joins_it = joins->begin();
+	while (joins_it != joins->end())
 	{
-		/*if (!it->second.size())	
+		
+		if (_channels.find(joins_it->first) == _channels.end()) // si no encuentras el canal
 		{
-			// ERR_NEEDMOREPARAMS (461) -> "<command> :Not enough parameters"
-			std::cerr << "[" << client.getFd() << "] JOIN: Not enough params\n";
-			return (461);
+			if (joins_it->first[0] != '#')
+			{
+				//ERR 403 -> "there is no such channel"
+				std::cout << "channel doesnt exist and can't be created\n";
+				return (403);
+			}
+			else
+			{
+				//create channel + make client operator
+				std::cout << "creating channel...\n";
+			}
 		}
-		if (args.size() == 0 && args[0] == "0")
-		{
-			partCmd(client, NULL);
-			return (NULL);
-		}
-		if (server._channels.getName() == args[0])
-		{
-				channel already exists
-		}
-		else if (args[0][0] != '#')
-			ERR 403 -> "there is no such channel"
-		else
-			create channel + make client operator
-
+		/*
 		if (client is authorized to join) // cumplen con: key, client limit , ban - exception, invite-only - exception
 		{
 			if ( el num de channels que se ha unido el cliente es < CHANLIMIT RPL_ISUPPORT)
@@ -190,7 +207,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		}
 		else
 			mirar esos codigos de ERR*/
-		it++;
+		joins_it++;
 	}	
 	delete joins;
 	// when all is good and done, SEND various responses to client
