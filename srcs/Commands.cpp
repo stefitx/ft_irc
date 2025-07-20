@@ -140,6 +140,24 @@ std::vector<std::string> vectorSplit(const std::string& str, char delim)
     return (tokens);
 }
 
+Channel	*Server::getChannel(const std::string	&name)
+{
+	std::map<std::string, Channel *>::iterator	it;
+
+	it = _channels.find(name);
+	if (it == _channels.end())
+		return (NULL);
+	return (it->second);
+}
+
+void	Server::createChannel(std::string channelName)
+{
+	(void)channelName;
+//	Channel *newChannel = new Channel(channelName);
+
+
+}
+
 std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::string> args)
 {
 	std::map<std::string, std::string>	*joins;
@@ -188,8 +206,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 	std::map<std::string, std::string>::iterator	joins_it = joins->begin();
 	while (joins_it != joins->end())
 	{
-		
-		if (_channels.find(joins_it->first) == _channels.end()) // si no encuentras el canal
+		if (!getChannel(joins_it->first)) // si no encuentras el canal
 		{
 			if (joins_it->first[0] != '#')
 			{
@@ -199,22 +216,30 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 			}
 			else
 			{
-				//create channel + make client operator
+				// create channel
 				std::cout << "creating channel...\n";
+				createChannel(joins_it->first);
+				std::cout << "done creating channel...\n";
+				// make client operator
 			}
 		}
-		/*
-		if (client is authorized to join) // cumplen con: key, client limit , ban - exception, invite-only - exception
+		else // el channel ya exise
 		{
-			if ( el num de channels que se ha unido el cliente es < CHANLIMIT RPL_ISUPPORT)
+			/*if ( client.getChannelsJoined() <= CHANLIMIT - 1)
 			{
-				add client to channel
+				// add client to channel
+				getChannel(joins_it->first)->addUser(client);
 			}
 			else
 				ERR_TOOMANYCHANNELS (405)
+			
+			if (client is authorized to join) // cumplen con: key, client limit , ban - exception, invite-only - exception
+			{
+					
+			}
+			else
+				mirar esos codigos de ERR*/
 		}
-		else
-			mirar esos codigos de ERR*/
 		joins_it++;
 	}	
 	delete joins;
@@ -373,7 +398,7 @@ int Server::quitCmd(Client &client, std::vector<std::string> args)
 			chan->broadcast(quit_line, client);
 
 			// Remove the client from the channel
-            chan->remove_user(&client);
+            chan->removeUser(&client);
         }
     }
 	disconnectClient(client);
@@ -390,7 +415,7 @@ void Server::disconnectClient(Client &client)
     for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
         Channel* chan = get_channel(*it);
         if (chan) {
-            chan->remove_user(&client);
+            chan->removeUser(&client);
 			// Send to client in channel
 			reply(client, 404, it->first, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "Disconected ()" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
 			std::cout << "Disconnected ()\n";

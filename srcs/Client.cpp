@@ -24,6 +24,7 @@ Client::Client(int fd)
 	isChannelOper = false;
 	isServerOper = false;
 	_isNetCat = false;
+	channelsJoined = 0;
 	channels = std::map<std::string, Channel>();
 }
 
@@ -40,6 +41,7 @@ Client::Client(const Client &other) :
 	isServerOper(other.isServerOper),
 	connectionTime(other.connectionTime),
 	_isNetCat(other._isNetCat),
+	channelsJoined(other.channelsJoined),
 	channels(other.channels)
 {}
 
@@ -60,6 +62,7 @@ Client &Client::operator=(const Client &other)
 		isChannelOper = other.isChannelOper;
 		connectionTime = other.connectionTime;
 		_isNetCat = other._isNetCat;
+		channelsJoined = other.channelsJoined;
 		channels = other.channels;
 	}
 	return *this;
@@ -69,11 +72,12 @@ std::string &Client::getNick() { return nickName; }
 std::string &Client::getUser() { return userName; }
 std::string &Client::getBuffer() { return buffer; }
 int &Client::getIp() { return ip; }
- std::map<std::string, Channel> Client::getChannels() const { return channels; }
+std::map<std::string, Channel> Client::getChannels() const { return channels; }
 int &Client::getFd() { return fd; }
 bool Client::getRegistryState() { return registryState; }
 bool Client::getHandShake() { return handShake; }
 bool Client::getServerOper() { return isServerOper; }
+int &Client::getChannelsJoined() { return channelsJoined; }
 time_t Client::getConnectionTime() const { return connectionTime; }
 bool Client::getIsNetCat() const { return _isNetCat; }
 

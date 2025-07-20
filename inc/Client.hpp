@@ -32,6 +32,7 @@ class	Client
 		void					setFd(int fd);
 		void					setHost(int host);
 		void					setHandShake(bool state);
+		void					setChannelsJoined(int channelsJoined);
 		void					setChannels(std::map<std::string, Channel> channels);
 		void					setRegistryState(bool state);
 		void					setServerOper(bool state);
@@ -41,6 +42,7 @@ class	Client
 		std::string				&getNick();
 		std::string				&getUser();
 		std::string				&getBuffer();
+		int						&getChannelsJoined();
 		std::map<std::string, Channel>	getChannels() const;
 		int						&getIp();
 		int						&getFd();
@@ -61,6 +63,7 @@ class	Client
 		bool							isServerOper;
 		time_t							connectionTime;
 		bool							_isNetCat;
+		int									channelsJoined;
 		std::map<std::string, Channel>	channels;
 };
 
