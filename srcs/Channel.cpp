@@ -53,7 +53,15 @@ void	Channel::broadcast(std::string msg, Client &except)
 	}
 }
 
-void Channel::remove_user(Client* client)
+void Channel::addUser(Client* client)
 {
-    clients.erase(client->getFd());
+	(void)client;
+}
+
+void Channel::removeUser(Client* client)
+{
+	(void)client;
+  //  clients.erase(client->getFd());
+
+
 }

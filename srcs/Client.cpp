@@ -23,6 +23,7 @@ Client::Client(int fd)
 	handShake = false;
 	isServerOper = false;
 	isChannelOper = false;
+	channelsJoined = 0;
 	channels = std::map<std::string, Channel>();
 }
 
@@ -37,6 +38,7 @@ Client::Client(const Client &other) :
 	handShake(other.handShake),
 	isServerOper(other.isServerOper),
 	isChannelOper(other.isChannelOper),
+	channelsJoined(other.channelsJoined),
 	channels(other.channels)
 {}
 
@@ -55,6 +57,7 @@ Client &Client::operator=(const Client &other)
 		isChannelOper = other.isChannelOper;
 		buffer = other.buffer;
 		ip = other.ip;
+		channelsJoined = other.channelsJoined;
 		channels = other.channels;
 	}
 	return *this;
@@ -64,11 +67,12 @@ std::string &Client::getNick() { return nickName; }
 std::string &Client::getUser() { return userName; }
 std::string &Client::getBuffer() { return buffer; }
 int &Client::getIp() { return ip; }
- std::map<std::string, Channel> Client::getChannels() const { return channels; }
+std::map<std::string, Channel> Client::getChannels() const { return channels; }
 int &Client::getFd() { return fd; }
 bool Client::getRegistryState() { return registryState; }
 bool Client::getHandShake() { return handShake; }
 bool Client::getServerOper() { return isServerOper; }
+int &Client::getChannelsJoined() { return channelsJoined; }
 
 void Client::setNick(std::string nick) { nickName = nick; }
 void Client::setUser(std::string user) { userName = user; }

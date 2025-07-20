@@ -32,6 +32,9 @@
 #include "Channel.hpp"
 // #include "CommandParser.hpp"
 
+
+# define CHANLIMIT "#:4"
+
 enum CommandType
 {
 	PASS,
@@ -81,7 +84,9 @@ class Server
 
 		// Client *lookupClientByFd(int fd);
 		void    processBuffer(Client *c);
-		// Channel *getOrCreateChannel(const std::string &name);
+		Channel *getChannel(const std::string &name);
+
+		void	createChannel(std::string channelName);
 
 		bool sendLine(Client &cli, const std::string &line);
 		bool reply(Client &cli, int code, const std::string &params, const std::string &text);
