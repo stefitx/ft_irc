@@ -8,7 +8,7 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 	args.erase(args.begin());
 	if (!client.getHandShake() && cmd != "PASS" && cmd != "NICK" && cmd != "USER")
 	{
-		reply(client, 451, "", "You have not registered");
+		errorReply(client, 451, cmd);
 		return;
 	}
 	if(cmd == "NICK" || cmd == "USER" || cmd == "PASS")
@@ -72,22 +72,26 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 			if (client.getRegistryState())
 			{
 				// ERR_UNKNOWNCOMMAND (421) (send to client)
-				std::cout << cmd << ": Unknow command\n";
+				code = 421;
+				// std::cout << cmd << ": Unknow command\n";
 			}
 		}
 	}
+	errorReply(client, code, cmd);
 	// ServerErrReply(code, client);
 }
 
 int    Server::nickCmd(Client &client, std::vector<std::string> args)
 {
 	if (args.empty())
-		return reply(client, 461, "" , "] NICK: not enough params") ? 0 : -1;
+		return 461;
+		// return reply(client, 461, "" , "] NICK: not enough params") ? 0 : -1;
 	std::map<int, Client*>::iterator	it = _clients.begin();
 	while (it != _clients.end())
 	{
 		if (it->second->getNick() == args[0])
-			return reply(client, 433, args[0], "] NICK: sorry, nick already in use!") ? 0 : -1;
+			return 433;
+			// return reply(client, 433, args[0], "] NICK: sorry, nick already in use!") ? 0 : -1;
 		it++;
 	}
     client.setNick(args[0]);
@@ -97,11 +101,14 @@ int    Server::nickCmd(Client &client, std::vector<std::string> args)
 int Server::passCmd(Client &client, std::vector<std::string> args)
 {
 	if (client.getRegistryState() == true)
-		return reply(client, 462, "", "] PASS: stop it, you've already registered") ? 0 : -1;
+		return 462;
+		// return reply(client, 462, "", "] PASS: stop it, you've already registered") ? 0 : -1;
 	else if (args.empty())
-		return reply(client, 461, "", "] PASS: empty password!") ? 0 : -1;
+		return 461;
+		// return reply(client, 461, "", "] PASS: empty password!") ? 0 : -1;
 	else if (args[0] != _password)
-		return reply(client, 464, "", "] PASS: wrong password!") ? 0 : -1;
+		return 464;
+		// return reply(client, 464, "", "] PASS: wrong password!") ? 0 : -1;
 	client.setRegistryState(true);
 	std::cout << "Client fd " << client.getFd() << " authenticated successfully :)\n";
 	return (0);
@@ -111,9 +118,11 @@ int Server::passCmd(Client &client, std::vector<std::string> args)
 int Server::userCmd(Client &client, std::vector<std::string> args)
 {
 	if (args.size() < 4)
-		return reply(client, 461, "", "] USER: Not enough params") ? 0 : -1;
+		return 461;
+		// return reply(client, 461, "", "] USER: Not enough params") ? 0 : -1;
 	if (client.getHandShake() == true)
-		return reply(client, 462, args[0], "] USER: already registered") ? 0 : -1;
+		return 462;
+		// return reply(client, 462, args[0], "] USER: already registered") ? 0 : -1;
 	client.setUser(args[0]);
 	return (0);
 }
@@ -130,7 +139,6 @@ std::vector<std::string> vectorSplit(const std::string& str, char delim)
     }
     return (tokens);
 }
-
 
 std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::string> args)
 {
@@ -167,7 +175,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		return (451);
 	}
 	if (!args.size())
-		return reply(client, 461, "", "] JOIN: Not enough params") ? 0 : -1;
+		return 461;
 	if (args.size() == 1 && args[0] == "0")
 	{
 		//partCmd(client, NULL);
@@ -216,60 +224,85 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 
 int Server::helpCmd(Client &client, std::vector<std::string> args)
 {
-	(void)client;
-	//we have to send all the prints to the client
 	if(args.empty())
 	{
-		std::cout << "Commands Available:\n";
-		std::cout << "NICK \t\t USER \t\t PASS \t\t QUIT \n";
-		std::cout << "JOIN \t\t PART \t\t TOPIC \t\t INVITE \n";
-		std::cout << "KICK \t\t MODE \t\t PRIVMSG \t\t OPER\n";
-		std::cout << "Type /WELP <command> for more information, or /WELP -l\n";
+		sendLine(client, "\r\n");
+		sendLine(client, ":" + _hostname + " 704 " + client.getNick() + " index " + ": Commands Available:\r\n");
+		sendLine(client, "\r\n");
+		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": NICK\t\tUSER\t\tPASS   \t\tQUIT\r\n");
+		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": JOIN\t\tPART\t\tTOPIC  \t\tINVITE\r\n");
+		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": KICK\t\tMODE\t\tPRIVMSG\t\tOPER\r\n");
+		sendLine(client, "\r\n");
+		sendLine(client, ":" + _hostname + " 706 " + client.getNick() + " index " + ": Type /WELP <command> for more information, or /WELP -l\r\n");
+		sendLine(client, "\r\n");
 	}
 	else if (args[0] == "-l")
 	{
-		std::cout << "Commands Available:\n";
-		std::cout << RED << "NICK" << RESET << " : Usage: NICK <nickname>, sets your nick\n";
-		std::cout << RED << "USER" << RESET << " : Usage: USER <username> <hostname> <servername> :<realname>\n";
-		std::cout << RED << "PASS"<< RESET << " : Usage: PASS <password>\n";
-		std::cout << RED << "QUIT" << RESET << " : Usage: QUIT [<reason>], disconnects from the current server\n";
-		std::cout << RED << "JOIN" << RESET << " : Usage: JOIN <channel>, joins the channel\n";
-		std::cout << RED << "PART" << RESET << " : Usage: PART [<channel>] [<reason>], leaves the channel, by default the current one\n";
-		std::cout << RED << "TOPIC" << RESET << " : Usage: TOPIC [<topic>], sets the topic if one is given, else shows the current topic\n";
-		std::cout << RED << "INVITE" << RESET << " : Usage: INVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\n";
-		std::cout << RED << "KICK" << RESET << " : Usage: KICK <nick> [reason], kicks the nick from the current channel (needs chanop)\n";
-		std::cout << RED << "MODE" << RESET << " : Usage: MODE <channel> [<mode>]\n";
-		std::cout << RED << "PRIVMSG" << RESET << " : Usage: PRIVMSG <target> :<message>\n";
-		std::cout << RED << "OPER" << RESET << " : Usage: OPER <username> <password>, grants operator privileges\n";
-		std::cout << "Type /WELP <command> for more information\n";
+		sendLine(client, "\r\n");
+		sendLine(client, " Commands Available:\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t NICK" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: NICK <nickname>, sets your nick\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t USER" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: USER <username> <hostname> <servername> :<realname>\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t PASS" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PASS <password>\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t QUIT" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: QUIT [<reason>], disconnects from the current server\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t JOIN" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: JOIN <channel>, joins the channel\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t PART" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PART [<channel>] [<reason>], leaves the channel, by default the current one\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t TOPIC" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: TOPIC [<topic>], sets the topic if one is given, else shows the current topic\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t INVITE" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: INVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t KICK" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: KICK <nick> [reason], kicks the nick from the current channel (needs chanop)\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t MODE" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: MODE <channel> [<mode>]\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t PRIVMSG" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PRIVMSG <target> :<message>\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t OPER" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: OPER <username> <password>, grants operator privileges\r\n");
+		sendLine(client, "\r\n");
+		sendLine(client, " Type /WELP <command> for more information, or /WELP -l\r\n");
+		sendLine(client, "\r\n");
+		/* ---------------------------------------------------------- */
+		// sendLine(client, "\r\n");
+		// sendLine(client, ":" + _hostname + " 704 " + client.getNick() + " index " + ": Commands Available:\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tNICK" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: NICK <nickname>, sets your nick\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tUSER" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: USER <username> <hostname> <servername> :<realname>\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tPASS" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PASS <password>\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tQUIT" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: QUIT [<reason>], disconnects from the current server\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tJOIN" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: JOIN <channel>, joins the channel\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tPART" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PART [<channel>] [<reason>], leaves the channel, by default the current one\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tTOPIC" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: TOPIC [<topic>], sets the topic if one is given, else shows the current topic\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tINVITE" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: INVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tKICK" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: KICK <nick> [reason], kicks the nick from the current channel (needs chanop)\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tMODE" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: MODE <channel> [<mode>]\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tPRIVMSG" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PRIVMSG <target> :<message>\r\n");
+		// sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": " + (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\tOPER" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: OPER <username> <password>, grants operator privileges\r\n");
+		// sendLine(client, "\r\n");
+		// sendLine(client, ":" + _hostname + " 706 " + client.getNick() + " index " + ": Type /WELP <command> for more information, or /WELP -l\r\n");
+		// sendLine(client, "\r\n");
 	}
 	else
 	{
-		std::cout << "Command: " << args[0] << "\n";
+		sendLine(client, "\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + " Usage\r\n" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
+
 		if (args[0] == "NICK" || args[0] == "nick")
-			std::cout << "Usage: NICK <nickname>, sets your nick\n";
+			sendLine(client, "\t\tNICK <nickname>, sets your nick\r\n");
 		else if (args[0] == "USER" || args[0] == "user")
-			std::cout << "Usage: USER <username> <hostname> <servername> :<realname>\n";
+			sendLine(client, "\t\tUSER <username> <hostname> <servername> :<realname>\r\n");
 		else if (args[0] == "PASS" || args[0] == "pass")
-			std::cout << "Usage: PASS <password>\n";
+			sendLine(client, "\t\tPASS <password>\r\n");
 		else if (args[0] == "QUIT" || args[0] == "quit")
-			std::cout << "Usage: QUIT [<reason>], disconnects from the current server\n";
+			sendLine(client, "\t\tQUIT [<reason>], disconnects from the current server\r\n");
 		else if (args[0] == "JOIN" || args[0] == "join")
-			std::cout << "Usage: JOIN <channel>, joins the channel\n";
+			sendLine(client, "\t\tJOIN <channel>, joins the channel\r\n");
 		else if (args[0] == "PART" || args[0] == "part")
-			std::cout << "Usage: PART [<channel>] [<reason>], leaves the channel, by default the current one\n";
+			sendLine(client, "\t\tPART [<channel>] [<reason>], leaves the channel, by default the current one\r\n");
 		else if (args[0] == "TOPIC" || args[0] == "topic")
-			std::cout << "Usage: TOPIC [<topic>], sets the topic if one is given, else shows the current topic\n";
+			sendLine(client, "\t\tTOPIC [<topic>], sets the topic if one is given, else shows the current topic\r\n");
 		else if (args[0] == "INVITE" || args[0] == "invite")
-			std::cout << "Usage: INVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\n";
+			sendLine(client, "\t\tINVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\r\n");
 		else if (args[0] == "KICK" || args[0] == "kick")
-			std::cout << "Usage: KICK <nick> [reason], kicks the nick from the current channel (needs chanop)\n";
+			sendLine(client, "\t\tKICK <nick> [reason], kicks the nick from the current channel (needs chanop)\r\n");
 		else if (args[0] == "MODE" || args[0] == "mode")
-			std::cout << "Usage: MODE <channel> [<mode>]\n";
+			sendLine(client, "\t\tMODE <channel> [<mode>]\r\n");
 		else if (args[0] == "PRIVMSG" || args[0] == "privmsg")
-			std::cout << "Usage: PRIVMSG <target> :<message>\n";
+			sendLine(client, "\t\tPRIVMSG <target> :<message>\r\n");
 		else if (args[0] == "OPER" || args[0] == "oper")
-			std::cout << "Usage: OPER <username> <password>, grants operator privileges\n";
+			sendLine(client, "\t\tOPER <username> <password>, grants operator privileges\r\n");
 		else
 		{
 			// ERR_HELPNOTFOUND (524) -> "client> <subject> :No help available on this topic"
@@ -306,7 +339,7 @@ int Server::operCmd(Client &client, std::vector<std::string> args)
 	client.setUser(args[0]);
 	client.setServerOper(true);
 	// RPL_YOUREOPER (381) 
-	std::cout << "Client fd " << client.getFd() << " is now an operator :)\n";
+	reply(client, 381, "", (client.getIsNetCat() ? std::string(GREEN) : std::string("\00303")) + "You are now an IRC operator" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
 	return (0);
 }
 
@@ -322,7 +355,7 @@ int Server::dieCmd(Client &client, std::vector<std::string> args)
 	std::map<int, Client *>::iterator it;
 	for(it = _clients.begin(); it != _clients.end(); ++it)
 	{
-		// Notify each client about the server shutdown with a SEND
+		reply(*it->second, 400, "", "Server is shutting down. Goodbye!");
 		std::cout << "Notifying client fd " << it->second->getFd() << " about server shutdown...\n";
 	}
 	exit(0);
@@ -359,6 +392,7 @@ void Server::disconnectClient(Client &client)
         if (chan) {
             chan->remove_user(&client);
 			// Send to client in channel
+			reply(client, 404, it->first, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "Disconected ()" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
 			std::cout << "Disconnected ()\n";
             // Optionally broadcast PART or QUIT here
         }
@@ -391,9 +425,9 @@ Channel *Server::get_channel(const std::pair<std::string, Channel> &pair)
 
 CommandType Server::isCommand(const std::string &cmd)
 {
-	if (cmd == "PASS") return (PASS);
-	else if (cmd == "NICK") return (NICK);
-	else if (cmd == "USER") return (USER);
+	if (cmd == "PASS" || cmd == "pass") return (PASS);
+	else if (cmd == "NICK" || cmd == "nick") return (NICK);
+	else if (cmd == "USER" || cmd == "user") return (USER);
 	else if (cmd == "QUIT") return (QUIT);
 	else if (cmd == "HELP" || cmd == "WELP" || cmd == "welp") return (HELP);
 	else if (cmd == "JOIN") return (JOIN);

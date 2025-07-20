@@ -35,6 +35,8 @@ class	Client
 		void					setChannels(std::map<std::string, Channel> channels);
 		void					setRegistryState(bool state);
 		void					setServerOper(bool state);
+		void					setConnectionTime(time_t time);
+		void					setIsNetCat(bool state);
 
 		std::string				&getNick();
 		std::string				&getUser();
@@ -45,6 +47,8 @@ class	Client
 		bool					getRegistryState();
 		bool					getHandShake();
 		bool					getServerOper();
+		time_t					getConnectionTime() const;
+		bool					getIsNetCat() const;
 	private:
 		std::string						nickName;
 		std::string						userName;
@@ -53,8 +57,10 @@ class	Client
 		int								fd;
 		bool							registryState; // correct password, nick, user are set
 		bool							handShake;
-		bool								isServerOper;
-		bool								isChannelOper;
+		bool							isChannelOper;
+		bool							isServerOper;
+		time_t							connectionTime;
+		bool							_isNetCat;
 		std::map<std::string, Channel>	channels;
 };
 

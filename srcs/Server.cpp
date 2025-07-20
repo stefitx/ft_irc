@@ -100,7 +100,7 @@ void Server::acceptNewClient()
 
 		struct pollfd pfd = {fd, POLLIN, 0};
 		_pollFds.push_back(pfd);
-
+		_clients[fd]->setConnectionTime(time(NULL));
 		std::cout << "[+] Client connected fd=" << fd << "\n";
 }
 }

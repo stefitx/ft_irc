@@ -2,25 +2,26 @@
 
 bool Server::sendLine(Client &cli, const std::string &line)
 {
-	const char *data;
-	size_t left;
-	ssize_t n;
+	// const char *data;
+	// size_t left;
+	// ssize_t n;
 
-	data = line.c_str();
-	left = line.size();
-	while (left)
-	{
-		n = send(cli.getFd(), data, left, MSG_DONTWAIT | MSG_NOSIGNAL);
-		if (n == -1)
-		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				continue;
-			perror("send");
-			return false;
-		}
-		left  -= n;
-		data  += n;
-	}
+	// data = line.c_str();
+	// left = line.size();
+	send(cli.getFd(), line.c_str(), line.size(), 0);
+	// while (left)
+	// {
+	// 	n = send(cli.getFd(), data, left, MSG_DONTWAIT | MSG_NOSIGNAL);
+	// 	if (n == -1)
+	// 	{
+	// 		if (errno == EAGAIN || errno == EWOULDBLOCK)
+	// 			continue;
+	// 		perror("send");
+	// 		return false;
+	// 	}
+	// 	left  -= n;
+	// 	data  += n;
+	// }
 	return true;
 }
 
@@ -54,6 +55,8 @@ void Server::handshake(Client &c)
     time_t now = time(NULL);
     char   datebuf[64];
 
+	if(difftime(time(NULL), c.getConnectionTime()) > 2)
+		c.setIsNetCat(true);
     strftime(datebuf, sizeof datebuf, "%d-%b-%Y %H:%M:%S %Z", localtime(&now));
 
     reply(c, 1,  "", "Welcome to the " + _hostname + " Network " + c.getNick() + "!~" + c.getUser() + "@" + _hostname);
@@ -63,4 +66,24 @@ void Server::handshake(Client &c)
     reply(c, 5,  "CHANTYPES=# CHANMODES=,ntkl", "are supported by this server");
 
     std::cout << GREEN << "[fd " << c.getFd() << "] handshake sent" << RESET << '\n';
+}
+
+void Server::errorReply(Client &cli, int code, std::string cmd)
+{
+	std::string line = ":" + _hostname + " " + itoa3(code) + " " + cli.getNick() + " :" + (cli.getIsNetCat() ? std::string(RED) : std::string("\00304"));
+	switch (code)
+	{
+		case 403: line += "No such channel"; break;
+		case 421: line += "[" + cmd + "]: Unknown command"; break;
+		case 433: line += "Nickname is already in use"; break;
+		case 451: line += "You have not registered"; break;
+		case 461: line += "[" + cmd + "]: Not enough parameters"; break;
+		case 462: line += "You may not reregister"; break;
+		case 464: line += "Password incorrect"; break;
+		case 481: line += "Permission Denied- You're not an IRC operator"; break;
+		case 524: line = "No help available on this topic"; break;
+		default: line += "Unknown error";
+	}
+	line += (cli.getIsNetCat() ? std::string(RESET) : std::string("\017")) + "\r\n";
+	sendLine(cli, line);
 }

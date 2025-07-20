@@ -90,6 +90,7 @@ class Server
 		CommandType isCommand(const std::string &cmd);
 		Channel *get_channel(const std::pair<std::string, Channel> &pair);
 		void	disconnectClient(Client &client);
+		void	errorReply(Client &cli, int code, std::string cmd);
 
 		// COMMANDS TO BE RECEIVED
 		int	nickCmd(Client&, std::vector<std::string> args);
