@@ -72,7 +72,7 @@ std::string &Client::getNick() { return nickName; }
 std::string &Client::getUser() { return userName; }
 std::string &Client::getBuffer() { return buffer; }
 int &Client::getIp() { return ip; }
-std::map<std::string, Channel> Client::getChannels() const { return channels; }
+const std::map<std::string, Channel> &Client::getChannels() const { return channels; }
 int &Client::getFd() { return fd; }
 bool Client::getRegistryState() { return registryState; }
 bool Client::getHandShake() { return handShake; }

@@ -136,7 +136,7 @@ int Server::userCmd(Client &client, std::vector<std::string> args)
 	if (client.getHandShake() == true)
 		return 462;
 	// return reply(client, 462, args[0], "] USER: already registered") ? 0 : -1;
-	
+
 	if (args.size() < 4)
 		return 461;
 		// return reply(client, 461, "", "] USER: Not enough params") ? 0 : -1;
@@ -144,13 +144,13 @@ int Server::userCmd(Client &client, std::vector<std::string> args)
 	return (0);
 }
 
-std::vector<std::string> vectorSplit(const std::string& str, char delim) 
+std::vector<std::string> vectorSplit(const std::string& str, char delim)
 {
     std::vector<std::string> tokens;
     std::string token;
     std::stringstream ss(str);
 
-    while (std::getline(ss, token, delim)) 
+    while (std::getline(ss, token, delim))
 	{
         tokens.push_back(token);
     }
@@ -190,7 +190,7 @@ std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::strin
     if (args.size() > 1)
 		keys = vectorSplit(args[1], ',');
 	std::string	channelKey;
-    for (size_t i = 0; i < channels.size(); ++i) 
+    for (size_t i = 0; i < channels.size(); ++i)
 	{
 		if (i < keys.size())
 			channelKey = keys[i];
@@ -206,12 +206,12 @@ std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::strin
 int	Server::joinCmd(Client &client, std::vector<std::string> args)
 {
 	std::map<std::string, std::string>	*joins;
-	
+
 	// std::cout << "heyy im in joinn\n";
 
 	if (!client.getRegistryState())
 	{
-		//ERR_NOTREGISTERED (451) 
+		//ERR_NOTREGISTERED (451)
 		std::cout << "You haven't registered yet!\n";
 		return (451);
 	}
@@ -247,7 +247,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " JOIN " + channel + " * :" + "Welcome to the channel!\r\n");
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@" + client.getNick() + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
-				
+
 				// RPL_NAMEREPLY 353
 				// send RPL_ENDOFNAMES 366
 				// reply(client, 0, "", );
@@ -290,17 +290,17 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				// ERR_TOOMANYCHANNELS (405)
 				return (405);
 			}
-			
+
 			/*if (client is authorized to join) // cumplen con: key, client limit , ban - exception, invite-only - exception
 			{
-					
+
 			}
 			else
 				mirar esos codigos de ERR*/
 			_channels[channel]->addMember(&client);
 		}
 		joins_it++;
-	}	
+	}
 	delete joins;
 	return (0);
 }
@@ -421,7 +421,7 @@ int Server::operCmd(Client &client, std::vector<std::string> args)
 	client.setNick(args[0]);
 	client.setUser(args[0]);
 	client.setServerOper(true);
-	// RPL_YOUREOPER (381) 
+	// RPL_YOUREOPER (381)
 	reply(client, 381, "", (client.getIsNetCat() ? std::string(GREEN) : std::string("\00303")) + "You are now an IRC operator" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
 	return (0);
 }
@@ -447,7 +447,7 @@ int Server::dieCmd(Client &client, std::vector<std::string> args)
 
 int Server::quitCmd(Client &client, std::vector<std::string> args)
 {
-	std::map<std::string, Channel>::iterator it;
+	std::map<std::string, Channel>::const_iterator it;
 	for (it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
         Channel* chan = getChannel(it->first);
         if (chan) {
@@ -465,46 +465,26 @@ int Server::quitCmd(Client &client, std::vector<std::string> args)
 
 void Server::disconnectClient(Client &client)
 {
-	std::cout << "Disconnecting client fd " << client.getFd() << "...\n";
+	int fd = client.getFd();
+	std::cout << "Disconnecting client fd " << fd << "...\n";
 
-	// Remove the client from all channels they are part of
-	std::map<std::string, Channel> channels = client.getChannels();	
-
-    for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
-        Channel* chan = getChannel(it->first);
-        if (chan) {
-            chan->removeMember(&client);
-			// Send to client in channel
-			reply(client, 404, it->first, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "Disconected ()" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
+	const std::map<std::string, Channel>& channels = client.getChannels();
+	for (std::map<std::string, Channel>::const_iterator it = channels.begin(); it != channels.end(); ++it) {
+		Channel* chan = getChannel(it->first);
+		if (chan) {
+			chan->removeMember(&client);
+			reply(client, 404, it->first, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "Disconnected ()" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
 			std::cout << "Disconnected ()\n";
-            // Optionally broadcast PART or QUIT here
-        }
-    }
-	_clients.erase(client.getFd());
-	close(client.getFd());
-	std::vector<struct pollfd>::iterator it = _pollFds.begin();
-	for(size_t idx = 0; idx < _pollFds.size(); ++idx, ++it)
-	{
-		if (it->fd == client.getFd())
-		{
-			_pollFds.erase(it);
+		}
+	}
+	for (size_t i = 0; i < _pollFds.size(); ++i) {
+		if (_pollFds[i].fd == fd) {
+			removeClient(i);
 			break;
 		}
 	}
-	std::cout << "Client fd " << client.getFd() << " disconnected successfully.\n";
+	std::cout << "Client fd " << fd << " disconnected successfully.\n";
 }
-
-// Channel *Server::get_channel(const std::pair<std::string, Channel> &pair)
-// {
-// 	std::map<std::string, Channel *>::iterator it = _channels.find(pair.first);
-// 	if (it != _channels.end())
-// 		return it->second;
-// 	else
-// 	{
-		
-// 		return it->second;
-// 	}
-// }
 
 CommandType Server::isCommand(const std::string &cmd)
 {

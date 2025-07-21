@@ -15,12 +15,12 @@
 #include "../inc/Channel.hpp"
 
 Server::Server(unsigned short port, const std::string &password)
-    : _port(port), _password(password), _listenFd(-1), _running(false) 
+    : _port(port), _password(password), _listenFd(-1), _running(false)
 {
     _operator_credentials["cris"]  = "mandarino";
     _operator_credentials["marta"] = "voley";
     _operator_credentials["stefi"] = "taylor";
-    
+
 }
 
 Server::~Server()
@@ -111,8 +111,8 @@ void Server::handleClientData(size_t idx)
 	Client *c = _clients[fd];
 	char buf[1024];
 
-	//while (true)
-// {
+	while (true)
+{
 		ssize_t bytes = recv(c->getFd(), buf, sizeof(buf), MSG_DONTWAIT);
 		if (bytes == -1)
 		{
@@ -140,17 +140,26 @@ void Server::handleClientData(size_t idx)
 				return;
 			processBuffer(c); // Stub function for later parts
 		}
-	// }
+	}
 }
 
 void Server::removeClient(size_t idx)
 {
-	int fd = _pollFds[idx].fd;
-	close(fd);
-	delete _clients[fd];
-	_clients.erase(fd);
+	// int fd = _pollFds[idx].fd;
+	// close(fd);
+	// delete _clients[fd];
+	// _clients.erase(fd);
 
-	_pollFds[idx] = _pollFds.back();
+	// _pollFds[idx] = _pollFds.back();
+	// _pollFds.pop_back();
+	int fd = _pollFds[idx].fd;
+
+	if (_clients.count(fd)) {
+		delete _clients[fd];
+		_clients.erase(fd);
+	}
+	if (idx != _pollFds.size() - 1)
+		_pollFds[idx] = _pollFds.back();
 	_pollFds.pop_back();
 }
 
@@ -214,6 +223,10 @@ void Server::run()
 
 	while (_running)
 	{
+		if (_pollFds.empty()) {
+			std::cerr << "ERROR: pollFds is empty! This should never happen.\n";
+			break;
+		}
 		if (poll(&_pollFds[0], _pollFds.size(), -1) == -1)
 		{
 			if (errno == EINTR)
@@ -225,14 +238,36 @@ void Server::run()
 		if (_pollFds[0].revents & POLLIN)
 			acceptNewClient();
 
-		size_t i = _pollFds.size();
-		while (i > 1)
+		for (ssize_t i = _pollFds.size() - 1; i >= 1; --i)
 		{
-			--i;
 			if (_pollFds[i].revents & POLLIN)
+			{
 				handleClientData(i);
+				continue;
+			}
+
 			if (_pollFds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
+			{
 				removeClient(i);
+				continue;
+			}
 		}
+		// while (i-- > 1)
+		// {
+		// 	// --i;
+		// 	if (_pollFds[i].revents & POLLIN)
+		// 	{
+		// 		handleClientData(i);
+		// 		continue;
+		// 	}
+		// 	else if (_pollFds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
+		// 	{
+		// 		removeClient(i);
+		// 		continue;
+		// 	}
+		// }
+		std::cout << "Current poll fds:\n";
+		for (size_t i = 0; i < _pollFds.size(); ++i)
+			std::cout << "  [" << i << "] fd=" << _pollFds[i].fd << "\n";
 	}
 }

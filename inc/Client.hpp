@@ -43,7 +43,7 @@ class	Client
 		std::string				&getUser();
 		std::string				&getBuffer();
 		int						&getChannelsJoined();
-		std::map<std::string, Channel>	getChannels() const;
+		const std::map<std::string, Channel>	&getChannels() const;
 		int						&getIp();
 		int						&getFd();
 		bool					getRegistryState();
