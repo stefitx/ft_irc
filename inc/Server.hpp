@@ -50,7 +50,8 @@ enum CommandType
 	MODE,
 	PRIVMSG,
 	OPER,
-	DIE
+	DIE,
+	UNKNOWN
 	// NOTICE
 };
 

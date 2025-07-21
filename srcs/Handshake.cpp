@@ -73,7 +73,7 @@ void Server::errorReply(Client &cli, int code, std::string cmd)
 	std::string line = ":" + _hostname + " " + itoa3(code) + " " + cli.getNick() + " :" + (cli.getIsNetCat() ? std::string(RED) : std::string("\00304"));
 	switch (code)
 	{
-		case 403: line += "No such channel"; break;
+		case 403: line += cmd + "No such channel"; break;
 		case 421: line += "[" + cmd + "]: Unknown command"; break;
 		case 433: line += "Nickname is already in use"; break;
 		case 451: line += "You have not registered"; break;

@@ -6,7 +6,7 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 {
 	int code = 0;
 	args.erase(args.begin());
-	if (!client.getHandShake() && cmd != "PASS" && cmd != "NICK" && cmd != "USER")
+	if (!client.getHandShake() && cmd == "PASS" && cmd == "NICK" && cmd == "USER")
 	{
 		errorReply(client, 451, cmd);
 		return;
@@ -22,6 +22,8 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		if((client.getRegistryState() && client.getNick() != "" && client.getUser() != "") && !client.getHandShake())
 			handshake(client);
 		std::cout << RED << "[" << code << "] " << RESET << std::endl;
+		if (code)
+			errorReply(client, code, cmd);
 		return ;
 	}
 	switch (isCommand(cmd))
@@ -67,18 +69,18 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		case QUIT:
 			code = quitCmd(client, args);
 			break;
-		default:
+		case UNKNOWN:
 		{
-			if (client.getRegistryState())
-			{
+			//if (client.getRegistryState())
+			//{
 				// ERR_UNKNOWNCOMMAND (421) (send to client)
 				code = 421;
-				// std::cout << cmd << ": Unknow command\n";
-			}
+				std::cout << cmd << ": Unknow command\n";
+			//}
 		}
 	}
-	errorReply(client, code, cmd);
-	// ServerErrReply(code, client);
+	if (code)
+		errorReply(client, code, cmd);
 }
 
 int    Server::nickCmd(Client &client, std::vector<std::string> args)
@@ -117,12 +119,13 @@ int Server::passCmd(Client &client, std::vector<std::string> args)
 
 int Server::userCmd(Client &client, std::vector<std::string> args)
 {
+	if (client.getHandShake() == true)
+		return 462;
+	// return reply(client, 462, args[0], "] USER: already registered") ? 0 : -1;
+	
 	if (args.size() < 4)
 		return 461;
 		// return reply(client, 461, "", "] USER: Not enough params") ? 0 : -1;
-	if (client.getHandShake() == true)
-		return 462;
-		// return reply(client, 462, args[0], "] USER: already registered") ? 0 : -1;
 	client.setUser(args[0]);
 	return (0);
 }
@@ -465,6 +468,6 @@ CommandType Server::isCommand(const std::string &cmd)
 	else if (cmd == "PRIVMSG" || cmd == "privmsg")return (PRIVMSG);
 	else if (cmd == "DIE") return (DIE);
 	else
-		return static_cast<CommandType>(-1); // Unknown command
+		return (UNKNOWN);
 }
 
