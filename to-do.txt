@@ -16,3 +16,7 @@ DIE : who is server operator? Instructs the server to shut down.
 LIST
 NAMES
 ADMIN
+
+!Figure out why this appears in Hexchat when connecting with the wrong password:
+* have not registered
+* incorrect

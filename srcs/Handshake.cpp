@@ -1,34 +1,34 @@
 #include "../inc/Server.hpp"
 
-bool Server::sendLine(Client &cli, const std::string &line)
+bool sendLine(Client &cli, const std::string &line)
 {
-	// const char *data;
-	// size_t left;
+	const char *data;
+	size_t left;
 	ssize_t n;
 
-	// data = line.c_str();
-	// left = line.size();
-	n = send(cli.getFd(), line.c_str(), line.size(), 0);
-	if (n == -1)
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return false;
-		perror("send");
-		return false;
-	}
-	// while (left)
+	data = line.c_str();
+	left = line.size();
+	// n = send(cli.getFd(), line.c_str(), line.size(), 0);
+	// if (n == -1)
 	// {
-	// 	n = send(cli.getFd(), data, left, MSG_DONTWAIT | MSG_NOSIGNAL);
-	// 	if (n == -1)
-	// 	{
-	// 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-	// 			continue;
-	// 		perror("send");
+	// 	if (errno == EAGAIN || errno == EWOULDBLOCK)
 	// 		return false;
-	// 	}
-	// 	left  -= n;
-	// 	data  += n;
+	// 	perror("send");
+	// 	return false;
 	// }
+	while (left)
+	{
+		n = send(cli.getFd(), data, left, MSG_DONTWAIT | MSG_NOSIGNAL);
+		if (n == -1)
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				continue;
+			perror("send");
+			return false;
+		}
+		left  -= n;
+		data  += n;
+	}
 	return true;
 }
 
@@ -75,26 +75,26 @@ void Server::handshake(Client &c)
     std::cout << GREEN << "[fd " << c.getFd() << "] handshake sent" << RESET << '\n';
 }
 
-void Server::errorReply(Client &cli, int code, std::string cmd)
+void Server::errorReply(Client &cli, int code, std::string cmd, std::vector<std::string> args)
 {
-	std::string line = ":" + _hostname + " " + itoa3(code) + " " + cli.getNick() + " :" + (cli.getIsNetCat() ? std::string(RED) : std::string("\00304"));
+	std::string line = ":" + _hostname + " " + itoa3(code) + " " + cli.getNick() + " :" ;
 	switch (code)
 	{
 		case 000: return; // No error
 		case 401: line += "<nickname> No such nick/channel"; break;
-		case 403: line += cmd + "No such channel"; break;
+		case 403: line += args[0] + ": No such channel"; break;
 		case 411: line += "No recipient given (" + cmd + ")"; break;
 		case 412: line += "No text to send"; break;
 		case 421: line += "[" + cmd + "]: Unknown command"; break;
-		case 433: line += "Nickname is already in use"; break;
+		case 433: line += args[0] + ": Nickname is already in use"; break;
 		case 451: line += "You have not registered"; break;
 		case 461: line += "[" + cmd + "]: Not enough parameters"; break;
 		case 462: line += "You may not reregister"; break;
 		case 464: line += "Password incorrect"; break;
 		case 481: line += "Permission Denied- You're not an IRC operator"; break;
-		case 524: line = "No help available on this topic"; break;
+		case 524: line = args[0] + ": No help available on this topic"; break;
 		default: line += "Unknown error";
 	}
-	line += (cli.getIsNetCat() ? std::string(RESET) : std::string("\017")) + "\r\n";
+	line +=  "\r\n";
 	sendLine(cli, line);
 }

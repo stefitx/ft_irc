@@ -6,24 +6,33 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 {
 	int code = 0;
 	args.erase(args.begin());
-	if (!client.getHandShake() && cmd == "PASS" && cmd == "NICK" && cmd == "USER")
+	// std::cout << "nick = " << client.getNick() << std::endl;
+	// std::cout << "pass = " << client.getRegistryState() << std::endl;
+	// std::cout << "user = " << client.getUser() << std::endl;
+
+	if(isCommand(cmd) == UNKNOWN && cmd != "CAP" && cmd != "WHO")
 	{
-		errorReply(client, 451, cmd);
+		errorReply(client, 421, cmd, args);
 		return;
 	}
-	if(cmd == "NICK" || cmd == "USER" || cmd == "PASS")
+	else if (!client.getHandShake() && isCommand(cmd) != PASS && isCommand(cmd) != NICK && isCommand(cmd) != USER && cmd != "CAP" && cmd != "WHO")
 	{
-		if (cmd == "NICK")
+		errorReply(client, 451, cmd, args);
+		return;
+	}
+	if(isCommand(cmd) == NICK || isCommand(cmd) == USER || isCommand(cmd) == PASS)
+	{
+		if (isCommand(cmd) == NICK)
 			code = nickCmd(client, args);
-		else if (cmd == "USER")
+		else if (isCommand(cmd) == USER)
 			code = userCmd(client, args);
-		else if (cmd == "PASS")
+		else if (isCommand(cmd) == PASS)
 			code = passCmd(client, args);
 		if((client.getRegistryState() && client.getNick() != "" && client.getUser() != "") && !client.getHandShake())
 			handshake(client);
 		std::cout << RED << "[" << code << "] " << RESET << std::endl;
 		if (code)
-			errorReply(client, code, cmd);
+			errorReply(client, code, cmd, args);
 		return ;
 	}
 	switch (isCommand(cmd))
@@ -70,18 +79,22 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		case QUIT:
 			code = quitCmd(client, args);
 			break;
+		case CAP:
+			break;
 		case UNKNOWN:
 		{
+			if(cmd == "WHO")
+				return;
 			//if (client.getRegistryState())
 			//{
 				// ERR_UNKNOWNCOMMAND (421) (send to client)
-				code = 421;
-				std::cout << cmd << ": Unknow command\n";
+			code = 421;
+			std::cout << cmd << ": Unknow command\n";
 			//}
 		}
 	}
 	if (code)
-		errorReply(client, code, cmd);
+		errorReply(client, code, cmd, args);
 }
 
 int    Server::nickCmd(Client &client, std::vector<std::string> args)
@@ -154,12 +167,17 @@ Channel	*Server::getChannel(const std::string	&name)
 	return (it->second);
 }
 
-void	Server::createChannel(std::string channelName)
+void	Server::createChannel(std::string channelName, std::string key, Client *client)
 {
-	(void)channelName;
-//	Channel *newChannel = new Channel(channelName);
+	Channel *newChannel = new Channel(channelName);
 
+	if (!key.empty())
+		newChannel->setPassword(key);
+	newChannel->addMember(client);
+	newChannel->addOperator(client);
+	newChannel->setChanOperator(client);
 
+	_channels[channelName] = newChannel;
 }
 
 std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::string> args)
@@ -187,9 +205,10 @@ std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::strin
 
 int	Server::joinCmd(Client &client, std::vector<std::string> args)
 {
-	(void)args;
 	std::map<std::string, std::string>	*joins;
 	
+	// std::cout << "heyy im in joinn\n";
+
 	if (!client.getRegistryState())
 	{
 		//ERR_NOTREGISTERED (451) 
@@ -210,44 +229,79 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 	std::map<std::string, std::string>::iterator	joins_it = joins->begin();
 	while (joins_it != joins->end())
 	{
+		std::string	channel = joins_it->first;
+		std::string	key = joins_it->second;
 		if (!getChannel(joins_it->first)) // si no encuentras el canal
 		{
-			if (joins_it->first[0] != '#')
+
+			if (channel[0] != '#')
 			{
 				//ERR 403 -> "there is no such channel"
-				std::cout << "channel doesnt exist and can't be created\n";
 				return (403);
 			}
 			else
 			{
-				// create channel
-				std::cout << "creating channel...\n";
-				createChannel(joins_it->first);
-				std::cout << "done creating channel...\n";
-				// make client operator
+				createChannel(channel, key, &client);
+				// std::string	arg = "JOIN " + channel;
+				// std::string arg = ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname;
+				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " JOIN " + channel + " * :" + "Welcome to the channel!\r\n");
+				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@" + client.getNick() + "\r\n");
+				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
+				
+				// RPL_NAMEREPLY 353
+				// send RPL_ENDOFNAMES 366
+				// reply(client, 0, "", );
 			}
+
 		}
 		else // el channel ya exise
 		{
-			/*if ( client.getChannelsJoined() <= CHANLIMIT - 1)
+			if ( client.getChannelsJoined() <= CHANLIMIT - 1)
 			{
 				// add client to channel
-				getChannel(joins_it->first)->addUser(client);
+				getChannel(channel)->addMember(&client);
+				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " JOIN " + channel + " * :" + "Welcome to the channel!\r\n");
+				std::map<std::string, Client *>& members = _channels[channel]->getMapMembers();
+				std::string names_list;
+				for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it)
+				{
+					Client* member = it->second; // pointer to the Client object
+					std::string member_nick = member->getNick();
+					if (!names_list.empty())
+						names_list += " ";
+					names_list += member_nick;
+					// Now you can use member_nick in your reply
+					// Example: sendLine(client, ":" + member_nick + "!" + ... );
+				}
+				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@"  + names_list + "\r\n");
+				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
+				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + _hostname + " JOIN " + channel + " * :realname", client);
+
+				// for (std::map<std::string, Client *>::iterator members_it = _channels[channel]->getMapMembers().begin(); members_it != _channels[channel]->getMapMembers().end(); members_it++)
+				// {
+				// 	std::map<std::string, Client *> mapa = _channels[channel]->getMapMembers();
+				// 	std::string member_name = getChannel(channel);
+				// 	sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + );
+
+				// }
 			}
 			else
-				ERR_TOOMANYCHANNELS (405)
+			{
+				// ERR_TOOMANYCHANNELS (405)
+				return (405);
+			}
 			
-			if (client is authorized to join) // cumplen con: key, client limit , ban - exception, invite-only - exception
+			/*if (client is authorized to join) // cumplen con: key, client limit , ban - exception, invite-only - exception
 			{
 					
 			}
 			else
 				mirar esos codigos de ERR*/
+			_channels[channel]->addMember(&client);
 		}
 		joins_it++;
 	}	
 	delete joins;
-	// when all is good and done, SEND various responses to client
 	return (0);
 }
 
@@ -395,14 +449,14 @@ int Server::quitCmd(Client &client, std::vector<std::string> args)
 {
 	std::map<std::string, Channel>::iterator it;
 	for (it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
-        Channel* chan = get_channel(*it);
+        Channel* chan = getChannel(it->first);
         if (chan) {
 			std::string quit_line = ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " QUIT :" + (args.empty() ? "Leaving" : args[0]);
 			// Notify all clients in the channel about the quit
 			chan->broadcast(quit_line, client);
 
 			// Remove the client from the channel
-            chan->removeUser(&client);
+            chan->removeMember(&client);
         }
     }
 	disconnectClient(client);
@@ -417,9 +471,9 @@ void Server::disconnectClient(Client &client)
 	std::map<std::string, Channel> channels = client.getChannels();	
 
     for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
-        Channel* chan = get_channel(*it);
+        Channel* chan = getChannel(it->first);
         if (chan) {
-            chan->removeUser(&client);
+            chan->removeMember(&client);
 			// Send to client in channel
 			reply(client, 404, it->first, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "Disconected ()" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
 			std::cout << "Disconnected ()\n";
@@ -440,23 +494,23 @@ void Server::disconnectClient(Client &client)
 	std::cout << "Client fd " << client.getFd() << " disconnected successfully.\n";
 }
 
-Channel *Server::get_channel(const std::pair<std::string, Channel> &pair)
-{
-	std::map<std::string, Channel *>::iterator it = _channels.find(pair.first);
-	if (it != _channels.end())
-		return it->second;
-	else
-	{
+// Channel *Server::get_channel(const std::pair<std::string, Channel> &pair)
+// {
+// 	std::map<std::string, Channel *>::iterator it = _channels.find(pair.first);
+// 	if (it != _channels.end())
+// 		return it->second;
+// 	else
+// 	{
 		
-		return it->second;
-	}
-}
+// 		return it->second;
+// 	}
+// }
 
 CommandType Server::isCommand(const std::string &cmd)
 {
-	if (cmd == "PASS" || cmd == "pass") return (PASS);
-	else if (cmd == "NICK" || cmd == "nick") return (NICK);
-	else if (cmd == "USER" || cmd == "user") return (USER);
+	if (cmd == "PASS") return (PASS);
+	else if (cmd == "NICK") return (NICK);
+	else if (cmd == "USER") return (USER);
 	else if (cmd == "QUIT") return (QUIT);
 	else if (cmd == "HELP" || cmd == "WELP" || cmd == "welp") return (HELP);
 	else if (cmd == "JOIN") return (JOIN);
@@ -468,6 +522,7 @@ CommandType Server::isCommand(const std::string &cmd)
 	else if (cmd == "OPER" || cmd == "oper") return (OPER);
 	else if (cmd == "PRIVMSG" || cmd == "privmsg")return (PRIVMSG);
 	else if (cmd == "DIE") return (DIE);
+	else if (cmd == "CAP") return (CAP);
 	else
 		return (UNKNOWN);
 }
@@ -514,7 +569,7 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 			Channel *channel = getChannel(tgt);
 			if (!channel)
 			{
-				errorReply(client, 403, channel->getName());
+				errorReply(client, 403, channel->getName(), args);
 				// std::cerr << "[" << client.getFd() << "] PRIVMSG: No such channel: " << tgt << "\n";
 				continue; // or collect error codes if needed
 			}
@@ -533,7 +588,7 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 				}
 			}
 			if (!found)
-				errorReply(client, 401, tgt);
+				errorReply(client, 401, tgt, args);
 		}
 	}
 	// if (target[0] == '#')

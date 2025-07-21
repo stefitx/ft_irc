@@ -17,11 +17,17 @@ class	Channel
 		Channel	&operator=(const Channel&);
 
 		void	broadcast(std::string msg, Client &client);
-		void	addUser(Client *client);
-		void	removeUser(Client* client);
+		void	addMember(Client *client);
+		void	addOperator(Client *client);
+		void	removeMember(Client* client);
+		void	removeOperator(Client* client);
 		std::string	getName() const;
 
+		void	setChanOperator(Client *creator);
+		void	setPassword(const std::string key);
 
+		Client*	getMembers(std::string clientName);
+		std::map<std::string, Client *>	&getMapMembers();
 	private:
 		std::string					name;
 		std::vector<std::string>	privileges;
@@ -30,12 +36,10 @@ class	Channel
 		std::string					topic;
 		int							userLimit;
 		std::string					password;
-		std::vector<int>			mode;
-		// again, not sure which container to use
+		std::string					mode;
+		Client*						chanOperator; // the first client to create the channel
 		std::string					accessType; // muy relacionado con 'mode'
 		
-		// !!
-		std::map<int, Client *>		clients; // map of clients in the channel
-		// maybe haria este map <string, Client *>!
-
+		std::map<std::string, Client *>		members; // map of clients in the channel
+		std::map<std::string, Client *>		operators;
 };

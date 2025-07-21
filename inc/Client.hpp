@@ -63,7 +63,7 @@ class	Client
 		bool							isServerOper;
 		time_t							connectionTime;
 		bool							_isNetCat;
-		int									channelsJoined;
+		int								channelsJoined;
 		std::map<std::string, Channel>	channels;
 };
 

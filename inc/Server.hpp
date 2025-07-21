@@ -33,7 +33,7 @@
 // #include "CommandParser.hpp"
 
 
-# define CHANLIMIT "#:4"
+# define CHANLIMIT 4
 
 enum CommandType
 {
@@ -51,6 +51,7 @@ enum CommandType
 	PRIVMSG,
 	OPER,
 	DIE,
+	CAP,
 	UNKNOWN
 	// NOTICE
 };
@@ -87,16 +88,15 @@ class Server
 		void    processBuffer(Client *c);
 		Channel *getChannel(const std::string &name);
 
-		void	createChannel(std::string channelName);
+		void	createChannel(std::string channelName, std::string key, Client *client);
 
-		bool sendLine(Client &cli, const std::string &line);
 		bool reply(Client &cli, int code, const std::string &params, const std::string &text);
 		void	executeCmd(Client &, std::string cmd, std::vector<std::string> args);
 		void	handshake(Client &client);
 		CommandType isCommand(const std::string &cmd);
-		Channel *get_channel(const std::pair<std::string, Channel> &pair);
+		//Channel *get_channel(const std::pair<std::string, Channel> &pair);
 		void	disconnectClient(Client &client);
-		void	errorReply(Client &cli, int code, std::string cmd);
+		void	errorReply(Client &cli, int code, std::string cmd, std::vector<std::string> args);
 		std::string itoa3(int code);
 
 		// COMMANDS TO BE RECEIVED
@@ -116,4 +116,7 @@ class Server
 		Server(unsigned short port, const std::string &password);
 		~Server();
 		void run();
+	//	bool sendLine(Client &cli, const std::string &line);
+
 } ;
+bool sendLine(Client &cli, const std::string &line);
