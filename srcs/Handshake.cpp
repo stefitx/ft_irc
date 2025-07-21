@@ -82,7 +82,7 @@ void Server::errorReply(Client &cli, int code, std::string cmd)
 	{
 		case 000: return; // No error
 		case 401: line += "<nickname> No such nick/channel"; break;
-		case 403: line += "No such channel"; break;
+		case 403: line += cmd + "No such channel"; break;
 		case 411: line += "No recipient given (" + cmd + ")"; break;
 		case 412: line += "No text to send"; break;
 		case 421: line += "[" + cmd + "]: Unknown command"; break;
