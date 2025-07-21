@@ -19,6 +19,7 @@ class	Channel
 		void	broadcast(std::string msg, Client &client);
 		void	addUser(Client *client);
 		void	removeUser(Client* client);
+		std::string	getName() const;
 
 
 	private:

@@ -4,11 +4,18 @@ bool Server::sendLine(Client &cli, const std::string &line)
 {
 	// const char *data;
 	// size_t left;
-	// ssize_t n;
+	ssize_t n;
 
 	// data = line.c_str();
 	// left = line.size();
-	send(cli.getFd(), line.c_str(), line.size(), 0);
+	n = send(cli.getFd(), line.c_str(), line.size(), 0);
+	if (n == -1)
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return false;
+		perror("send");
+		return false;
+	}
 	// while (left)
 	// {
 	// 	n = send(cli.getFd(), data, left, MSG_DONTWAIT | MSG_NOSIGNAL);
@@ -25,7 +32,7 @@ bool Server::sendLine(Client &cli, const std::string &line)
 	return true;
 }
 
-static std::string itoa3(int code)
+std::string Server::itoa3(int code)
 {
 	std::ostringstream oss;
 
@@ -73,7 +80,11 @@ void Server::errorReply(Client &cli, int code, std::string cmd)
 	std::string line = ":" + _hostname + " " + itoa3(code) + " " + cli.getNick() + " :" + (cli.getIsNetCat() ? std::string(RED) : std::string("\00304"));
 	switch (code)
 	{
+		case 000: return; // No error
+		case 401: line += "<nickname> No such nick/channel"; break;
 		case 403: line += "No such channel"; break;
+		case 411: line += "No recipient given (" + cmd + ")"; break;
+		case 412: line += "No text to send"; break;
 		case 421: line += "[" + cmd + "]: Unknown command"; break;
 		case 433: line += "Nickname is already in use"; break;
 		case 451: line += "You have not registered"; break;

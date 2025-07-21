@@ -96,6 +96,7 @@ class Server
 		Channel *get_channel(const std::pair<std::string, Channel> &pair);
 		void	disconnectClient(Client &client);
 		void	errorReply(Client &cli, int code, std::string cmd);
+		std::string itoa3(int code);
 
 		// COMMANDS TO BE RECEIVED
 		int	nickCmd(Client&, std::vector<std::string> args);
@@ -107,6 +108,7 @@ class Server
 		int operCmd(Client&, std::vector<std::string> args);
 		int dieCmd(Client&, std::vector<std::string> args);
 		int quitCmd(Client&, std::vector<std::string> args);
+		int privmsgCmd(Client&, std::vector<std::string> args);
 
 
 	public:

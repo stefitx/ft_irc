@@ -58,6 +58,8 @@ void Channel::addUser(Client* client)
 	(void)client;
 }
 
+std::string Channel::getName() const { return name; }
+
 void Channel::removeUser(Client* client)
 {
 	(void)client;
