@@ -35,13 +35,13 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		case USER: code = userCmd(client, args); break;
 		case PASS: code = passCmd(client, args); break;
 		case JOIN: code = joinCmd(client, args); break;
-		case PART: //code = partCmd(client, args); break;
-		case TOPIC: // code = topic(client, args); break;
-		case INVITE: // code = invite(client, args); break;
-		case KICK: // code = kick(client, args); break;
-		case MODE: // code =mode(client, args); break;
-		case PRIVMSG: code = privmsgCmd(client, args); break;
+		case PART: break;//code = partCmd(client, args); break;
+		case TOPIC: break;// code = topic(client, args); break;
+		case INVITE: break;// code = invite(client, args); break;
+		case KICK: break;// code = kick(client, args); break;
+		case MODE: break;// code =mode(client, args); break;
 		case OPER: code = operCmd(client, args); break;
+		case PRIVMSG: code = privmsgCmd(client, args); break;
 		case HELP: code = helpCmd(client, args); break;
 		case DIE: code = dieCmd(client, args); break;
 		case QUIT: code = quitCmd(client, args); break;
@@ -505,17 +505,18 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 	std::cout << "PRIVMSG: target: " << target << ", message: " << message << std::endl;
 	for (size_t i = 0; i < targets.size(); ++i)
 	{
+		std::cout << "PRIVMSG: target[" << i << "]: " << targets[i] << std::endl;
 		std::string &tgt = targets[i];
 		if (tgt[0] == '#')
 		{
 			Channel *channel = getChannel(tgt);
 			if (!channel)
 			{
-				errorReply(client, 403, channel->getName(), args);
-				// std::cerr << "[" << client.getFd() << "] PRIVMSG: No such channel: " << tgt << "\n";
-				continue; // or collect error codes if needed
+				std::cerr << "[" << client.getFd() << "] PRIVMSG: No such nick/channel: " << tgt << std::endl;
+				errorReply(client, 401, tgt, args);
+				continue;
 			}
-			channel->broadcast(message, client);
+			channel->broadcast(":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " PRIVMSG " + tgt + " :" + message, client);
 		}
 		else
 		{

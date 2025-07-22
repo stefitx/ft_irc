@@ -267,8 +267,8 @@ void Server::run()
 		// 		continue;
 		// 	}
 		// }
-		std::cout << "Current poll fds:\n";
-		for (size_t i = 0; i < _pollFds.size(); ++i)
-			std::cout << "  [" << i << "] fd=" << _pollFds[i].fd << "\n";
+		// std::cout << "Current poll fds:\n";
+		// for (size_t i = 0; i < _pollFds.size(); ++i)
+		// 	std::cout << "  [" << i << "] fd=" << _pollFds[i].fd << "\n";
 	}
 }

@@ -51,7 +51,7 @@ bool Server::reply(Client &cli, int code, const std::string &params, const std::
         line += " " + params;
     if (!text.empty())
         line += ":" + text;
-    line += "\r\n"; 
+    line += "\r\n";
 	return (sendLine(cli, line));
 }
 
@@ -77,11 +77,11 @@ void Server::handshake(Client &c)
 
 void Server::errorReply(Client &cli, int code, std::string cmd, std::vector<std::string> args)
 {
-	std::string line = ":" + _hostname + " " + itoa3(code) + " " + cli.getNick() + " :" ;
+	std::string line = ":" + _hostname + " " + itoa3(code) + " " + (cli.getNick().empty() ? "*" : cli.getNick()) + " :" ;
 	switch (code)
 	{
 		case 000: return; // No error
-		case 401: line += "<nickname> No such nick/channel"; break;
+		case 401: line += cmd + ": No such nick/channel"; break;
 		case 403: line += args[0] + ": No such channel"; break;
 		case 411: line += "No recipient given (" + cmd + ")"; break;
 		case 412: line += "No text to send"; break;
