@@ -51,7 +51,7 @@ enum CommandType
 	PRIVMSG,
 	OPER,
 	DIE,
-	CAP,
+	// CAP,
 	UNKNOWN
 	// NOTICE
 };

@@ -11,15 +11,9 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 	// std::cout << "user = " << client.getUser() << std::endl;
 
 	if(isCommand(cmd) == UNKNOWN && cmd != "CAP" && cmd != "WHO")
-	{
-		errorReply(client, 421, cmd, args);
-		return;
-	}
+		return (errorReply(client, 421, cmd, args), void());
 	else if (!client.getHandShake() && isCommand(cmd) != PASS && isCommand(cmd) != NICK && isCommand(cmd) != USER && cmd != "CAP" && cmd != "WHO")
-	{
-		errorReply(client, 451, cmd, args);
-		return;
-	}
+		return(errorReply(client, 451, cmd, args), void());
 	if(isCommand(cmd) == NICK || isCommand(cmd) == USER || isCommand(cmd) == PASS)
 	{
 		if (isCommand(cmd) == NICK)
@@ -37,60 +31,27 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 	}
 	switch (isCommand(cmd))
 	{
-		case NICK:
-			code = nickCmd(client, args);
-			break;
-		case USER:
-			code = userCmd(client, args);
-			break;
-		case PASS:
-			code = passCmd(client, args);
-			break;
-		case JOIN:
-			code = joinCmd(client, args);
-			break;
-		case PART:
-			// part(client, args);
-			break;
-		case TOPIC:
-			// topic(client, args);
-			break;
-		case INVITE:
-			// invite(client, args);
-			break;
-		case KICK:
-			// kick(client, args);
-			break;
-		case MODE:
-			// mode(client, args);
-			break;
-		case PRIVMSG:
-			code = privmsgCmd(client, args);
-			break;
-		case OPER:
-			code = operCmd(client, args);
-			break;
-		case HELP:
-			code = helpCmd(client, args);
-			break;
-		case DIE:
-			code = dieCmd(client, args);
-			break;
-		case QUIT:
-			code = quitCmd(client, args);
-			break;
-		case CAP:
-			break;
+		case NICK: code = nickCmd(client, args); break;
+		case USER: code = userCmd(client, args); break;
+		case PASS: code = passCmd(client, args); break;
+		case JOIN: code = joinCmd(client, args); break;
+		case PART: //code = partCmd(client, args); break;
+		case TOPIC: // code = topic(client, args); break;
+		case INVITE: // code = invite(client, args); break;
+		case KICK: // code = kick(client, args); break;
+		case MODE: // code =mode(client, args); break;
+		case PRIVMSG: code = privmsgCmd(client, args); break;
+		case OPER: code = operCmd(client, args); break;
+		case HELP: code = helpCmd(client, args); break;
+		case DIE: code = dieCmd(client, args); break;
+		case QUIT: code = quitCmd(client, args); break;
 		case UNKNOWN:
 		{
-			if(cmd == "WHO")
+			if(cmd == "WHO" || cmd == "CAP")
 				return;
-			//if (client.getRegistryState())
-			//{
 				// ERR_UNKNOWNCOMMAND (421) (send to client)
 			code = 421;
 			std::cout << cmd << ": Unknow command\n";
-			//}
 		}
 	}
 	if (code)
@@ -301,7 +262,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				//mirar esos codigos de ERR
 				//reply(authCode);
 			}
-			*/			
+			*/
 		}
 		joins_it++;
 	}
@@ -455,11 +416,8 @@ int Server::quitCmd(Client &client, std::vector<std::string> args)
 	for (it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
         Channel* chan = getChannel(it->first);
         if (chan) {
-			std::string quit_line = ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " QUIT :" + (args.empty() ? "Leaving" : args[0]);
-			// Notify all clients in the channel about the quit
+			std::string quit_line = ":" + client.getNick() + "!~" + client.getUser() + "@" + _hostname + " QUIT " + (args.empty() ? "Client Quit" : args[0]);
 			chan->broadcast(quit_line, client);
-
-			// Remove the client from the channel
             chan->removeMember(&client);
         }
     }
@@ -478,8 +436,7 @@ void Server::disconnectClient(Client &client)
 		if (chan) {
 			chan->removeMember(&client);
 			// hacer broadcast a los miembros del canal
-			reply(client, 404, it->first, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "holis" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
-			std::cout << "Disconnected ()\n";
+			reply(client, 404, it->first, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "Disconnected()" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
 		}
 	}
 	for (size_t i = 0; i < _pollFds.size(); ++i) {
@@ -508,7 +465,7 @@ CommandType Server::isCommand(const std::string &cmd)
 	else if (cmd == "OPER" || cmd == "oper") return (OPER);
 	else if (cmd == "PRIVMSG" || cmd == "privmsg")return (PRIVMSG);
 	else if (cmd == "DIE") return (DIE);
-	else if (cmd == "CAP") return (CAP);
+	// else if (cmd == "CAP") return (CAP);
 	else
 		return (UNKNOWN);
 }
