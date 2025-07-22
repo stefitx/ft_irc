@@ -52,18 +52,18 @@ class	Client
 		time_t					getConnectionTime() const;
 		bool					getIsNetCat() const;
 	private:
-		std::string						nickName;
-		std::string						userName;
-		std::string						buffer;
-		int								ip; // or hostname?
-		int								fd;
-		bool							registryState; // correct password, nick, user are set
-		bool							handShake;
-		bool							isChannelOper;
-		bool							isServerOper;
-		time_t							connectionTime;
+		std::string						_nickName;
+		std::string						_userName;
+		std::string						_buffer;
+		int								_ip; // or hostname?
+		int								_fd;
+		bool							_registryState; // correct password, nick, user are set
+		bool							_handShake;
+		bool							_isChannelOper;
+		bool							_isServerOper;
+		time_t							_connectionTime;
 		bool							_isNetCat;
-		int								channelsJoined;
-		std::map<std::string, Channel>	channels;
+		int								_channelsJoined;
+		std::map<std::string, Channel>	_channels;
 };
 

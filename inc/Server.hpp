@@ -77,27 +77,27 @@ class Server
 		std::string							_hostname;
 		std::map<std::string, std::string>	_operator_credentials;
 
-		void initListeningSocket();
+		void	initListeningSocket();
 
- 		void acceptNewClient();
-		void handleClientData(size_t pollIndex);
-		void removeClient(size_t pollIndex);
+ 		void	acceptNewClient();
+		void	handleClientData(size_t pollIndex);
+		void	removeClient(size_t pollIndex);
 
 
 		// Client *lookupClientByFd(int fd);
-		void    processBuffer(Client *c);
-		Channel *getChannel(const std::string &name);
+		void		processBuffer(Client *c);
+		Channel		*getChannel(const std::string &name);
 
-		void	createChannel(std::string channelName, std::string key, Client *client);
+		void		createChannel(std::string channelName, std::string key, Client *client);
 
-		bool reply(Client &cli, int code, const std::string &params, const std::string &text);
-		void	executeCmd(Client &, std::string cmd, std::vector<std::string> args);
-		void	handshake(Client &client);
-		CommandType isCommand(const std::string &cmd);
+		bool		reply(Client &cli, int code, const std::string &params, const std::string &text);
+		void		executeCmd(Client &, std::string cmd, std::vector<std::string> args);
+		void		handshake(Client &client);
+		CommandType	isCommand(const std::string &cmd);
 		//Channel *get_channel(const std::pair<std::string, Channel> &pair);
-		void	disconnectClient(Client &client);
-		void	errorReply(Client &cli, int code, std::string cmd, std::vector<std::string> args);
-		std::string itoa3(int code);
+		void		disconnectClient(Client &client);
+		void		errorReply(Client &cli, int code, std::string cmd, std::vector<std::string> args);
+		std::string	itoa3(int code);
 
 		// COMMANDS TO BE RECEIVED
 		int	nickCmd(Client&, std::vector<std::string> args);
@@ -115,7 +115,7 @@ class Server
 	public:
 		Server(unsigned short port, const std::string &password);
 		~Server();
-		void run();
+		void	run();
 	//	bool sendLine(Client &cli, const std::string &line);
 
 } ;

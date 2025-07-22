@@ -29,17 +29,17 @@ class	Channel
 		Client*	getMembers(std::string clientName);
 		std::map<std::string, Client *>	&getMapMembers();
 	private:
-		std::string					name;
-		std::vector<std::string>	privileges;
+		std::string					_name;
+		std::vector<std::string>	_privileges;
 		// los privilegios van relacionados con los clientes -> look for a better container
-		int							clientNum;
-		std::string					topic;
-		int							userLimit;
-		std::string					password;
-		std::string					mode;
-		Client*						chanOperator; // the first client to create the channel
-		std::string					accessType; // muy relacionado con 'mode'
-		
-		std::map<std::string, Client *>		members; // map of clients in the channel
-		std::map<std::string, Client *>		operators;
+		int							_clientNum;
+		std::string					_topic;
+		int							_userLimit;
+		std::string					_password;
+		std::string					_mode;
+		Client*						_chanOperator; // the first client to create the channel
+		std::string					_accessType; // muy relacionado con 'mode'
+
+		std::map<std::string, Client *>		_members; // map of clients in the channel
+		std::map<std::string, Client *>		_operators;
 };
