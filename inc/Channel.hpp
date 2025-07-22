@@ -26,7 +26,7 @@ class	Channel
 		void	setChanOperator(Client *creator);
 		void	setPassword(const std::string key);
 
-	//	int		authorizedToJoin(Client* client, );
+		int		authorizedToJoin(Client* client, std::string key);
 
 		Client*	getMembers(std::string clientName);
 		std::map<std::string, Client *>	&getMapMembers();

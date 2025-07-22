@@ -252,7 +252,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				// ERR_TOOMANYCHANNELS (405)
 				return (405);
 			}
-			/*int authCode = getChannel(channel)->authorizedToJoin(client, args);
+			int authCode = getChannel(channel)->authorizedToJoin(&client, key);
 			if (authCode == 0) // client is authorized to join -> cumplen con: key, client limit , ban - exception, invite-only - exception
 			{
 				_channels[channel]->addMember(&client);
@@ -262,7 +262,6 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				//mirar esos codigos de ERR
 				//reply(authCode);
 			}
-			*/
 		}
 		joins_it++;
 	}
