@@ -6,13 +6,14 @@ int Server::helpCmd(Client &client, std::vector<std::string> args)
 	if(args.empty())
 	{
 		sendLine(client, "\r\n");
-		sendLine(client, ":" + _hostname + " 704 " + client.getNick() + " index " + ": Commands Available:\r\n");
+		sendLine(client, ":" + _hostname + " 704 " + client.getNick() + ": Commands Available:\r\n");
 		sendLine(client, "\r\n");
-		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": NICK\t\tUSER\t\tPASS   \t\tQUIT\r\n");
-		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": JOIN\t\tPART\t\tTOPIC  \t\tINVITE\r\n");
-		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + " index " + ": KICK\t\tMODE\t\tPRIVMSG\t\tOPER\r\n");
+		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + ": NICK\t\tUSER\t\tPASS   \t\tQUIT\r\n");
+		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + ": JOIN\t\tPART\t\tTOPIC  \t\tINVITE\r\n");
+		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + ": KICK\t\tMODE\t\tPRIVMSG\t\tOPER\r\n");
+		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + ": WELP\t\tDIE\t\tKILL\r\n");
 		sendLine(client, "\r\n");
-		sendLine(client, ":" + _hostname + " 706 " + client.getNick() + " index " + ": Type /WELP <command> for more information, or /WELP -l\r\n");
+		sendLine(client, ":" + _hostname + " 706 " + client.getNick() + ": Type /WELP <command> for more information, or /WELP -l\r\n");
 		sendLine(client, "\r\n");
 	}
 	else if (args[0] == "-l")
@@ -31,6 +32,8 @@ int Server::helpCmd(Client &client, std::vector<std::string> args)
 		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t MODE" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: MODE <channel> [<mode>]\r\n");
 		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t PRIVMSG" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PRIVMSG <target> :<message>\r\n");
 		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t OPER" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: OPER <username> <password>, grants operator privileges\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t DIE" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: DIE, instructs the server to shut down\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t KILL" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: KILL <nickname> <comment>, disconnects target from the current server\r\n");
 		sendLine(client, "\r\n");
 		sendLine(client, " Type /WELP <command> for more information, or /WELP -l\r\n");
 		sendLine(client, "\r\n");
@@ -64,6 +67,10 @@ int Server::helpCmd(Client &client, std::vector<std::string> args)
 			sendLine(client, "\t\tPRIVMSG <target> :<message>\r\n");
 		else if (args[0] == "OPER" || args[0] == "oper")
 			sendLine(client, "\t\tOPER <username> <password>, grants operator privileges\r\n");
+		else if (args[0] == "DIE" || args[0] == "die")
+			sendLine(client, "\t\tDIE, instructs the server to shut down\r\n");
+		else if (args[0] == "KILL" || args[0] == "kill")
+			sendLine(client, "\t\tKILL <nickname> <comment>, disconnects target from the current server\r\n");
 		else
 		{
 			// ERR_HELPNOTFOUND (524) -> "client> <subject> :No help available on this topic"

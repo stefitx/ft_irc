@@ -83,7 +83,7 @@ CommandType Server::isCommand(const std::string &cmd)
 	else if (cmd == "MODE") return (MODE);
 	else if (cmd == "OPER" || cmd == "oper") return (OPER);
 	else if (cmd == "PRIVMSG" || cmd == "privmsg")return (PRIVMSG);
-	else if (cmd == "DIE") return (DIE);
+	else if (cmd == "DIE" || cmd == "die") return (DIE);
 	// else if (cmd == "CAP") return (CAP);
 	else
 		return (UNKNOWN);
