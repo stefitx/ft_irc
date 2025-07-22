@@ -70,7 +70,7 @@ void Server::handshake(Client &c)
     reply(c, 2,  "", "Your host is " + _hostname + ", running version 0.1");
     reply(c, 3,  "", "This server was created " + std::string(datebuf));
     reply(c, 4,  _hostname + " 0.1 aiwro imnptkol", "");
-    reply(c, 5,  "CHANTYPES=# CHANMODES=,ntkl", "are supported by this server");
+    reply(c, 5,  "USERLEN=12 CHANTYPES=# CHANMODES=,ntkl", "are supported by this server");
 
     std::cout << GREEN << "[fd " << c.getFd() << "] handshake sent" << RESET << '\n';
 }
