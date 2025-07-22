@@ -87,7 +87,17 @@ struct sockaddr_in &Client::getAddr(void) { return (_addr); }
 
 void Client::setNick(std::string nick) { _nickName = nick; }
 void Client::setUser(std::string user) { _userName = user; }
-void Client::setBuffer(std::string buf) { _buffer += buf; }
+void Client::setBuffer(std::string buf)
+{
+    std::string filtered;
+    filtered.reserve(buf.size());
+    for (std::string::iterator it = buf.begin(); it != buf.end(); ++it)
+    {
+        if (static_cast<unsigned char>(*it) != 4)
+            filtered += *it;
+    }
+    _buffer += filtered;
+}
 void Client::setFd(int fd) { _fd = fd; }
 void Client::setHost(std::string host) { _host = host; }
 void Client::setHandShake(bool state) { _handShake = state; }

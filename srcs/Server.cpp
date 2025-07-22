@@ -109,41 +109,37 @@ void Server::acceptNewClient()
 
 void Server::handleClientData(size_t idx)
 {
-	int fd = _pollFds[idx].fd;
-	Client *c = _clients[fd];
-	char buf[1024];
+	int    fd = _pollFds[idx].fd;
+	Client *c  = _clients[fd];
+	char   buf[1024];
 
-// 	while (true)
-// {
-		ssize_t bytes = recv(c->getFd(), buf, sizeof(buf), MSG_DONTWAIT);
+	while (true)
+	{
+		ssize_t bytes = recv(fd, buf, sizeof(buf), MSG_DONTWAIT);
 		if (bytes == -1)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				return;
+				break;                          // nothing more this time-slice
 			perror("recv");
 			removeClient(idx);
 			return;
 		}
 		if (bytes == 0)
 		{
-			std::cout << "[i] Client closed fd=" << fd << "\n";
+			std::cout << "[i] Client closed fd=" << fd << '\n';
 			removeClient(idx);
 			return;
 		}
-		else if (bytes > 1024)
-		{
-			std::cerr << "[!] Warning: Received more than 1024 bytes, weird things might happen ((>.<)).\n";
-		}
-		else
-		{
-			buf[bytes] = '\0';
-			c->setBuffer(buf);
-			if (c->getBuffer().find_first_of("\r\n") == std::string::npos)
-				return;
-			processBuffer(c); // Stub function for later parts
-		}
-	// }
+
+		/* ► Aggregate partial packets ◄ */
+		c->getBuffer().append(buf, static_cast<size_t>(bytes));
+
+		/* Process as soon as we have at least one full IRC line (ends “\r\n”). */
+		if (c->getBuffer().find("\r\n") != std::string::npos)
+			processBuffer(c);    // consumes complete lines, keeps any tail
+	}
 }
+
 
 void Server::removeClient(size_t idx)
 {
