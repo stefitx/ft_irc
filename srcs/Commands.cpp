@@ -102,6 +102,7 @@ int Server::userCmd(Client &client, std::vector<std::string> args)
 		return 461;
 		// return reply(client, 461, "", "] USER: Not enough params") ? 0 : -1;
 	client.setUser(args[0]);
+	client.setHost(inet_ntoa(client.getAddr().sin_addr));
 	return (0);
 }
 
@@ -237,7 +238,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				}
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@"  + names_list + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
-				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + _hostname + " JOIN " + channel + " * :realname", client);
+				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + " * :realname", client);
 				client.addJoinedChannel(getChannel(channel));
 				// for (std::map<std::string, Client *>::iterator members_it = _channels[channel]->getMapMembers().begin(); members_it != _channels[channel]->getMapMembers().end(); members_it++)
 				// {
@@ -415,7 +416,7 @@ int Server::quitCmd(Client &client, std::vector<std::string> args)
 	for (it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
         Channel* chan = getChannel(it->first);
         if (chan) {
-			std::string quit_line = ":" + client.getNick() + "!~" + client.getUser() + "@" + _hostname + " QUIT " + (args.empty() ? "Client Quit" : args[0]);
+			std::string quit_line = ":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " QUIT " + (args.empty() ? "Client Quit" : args[0]);
 			chan->broadcast(quit_line, client);
             chan->removeMember(&client);
         }
@@ -516,7 +517,7 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 				errorReply(client, 401, tgt, args);
 				continue;
 			}
-			channel->broadcast(":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " PRIVMSG " + tgt + " :" + message, client);
+			channel->broadcast(":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " PRIVMSG " + tgt + " :" + message, client);
 		}
 		else
 		{
@@ -525,7 +526,7 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 			{
 				if (it->second->getNick() == tgt)
 				{
-					sendLine(*it->second, ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " PRIVMSG " + tgt + " :" + message + "\r\n");
+					sendLine(*it->second, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " PRIVMSG " + tgt + " :" + message + "\r\n");
 					found = true;
 					break;
 				}

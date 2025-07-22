@@ -30,7 +30,7 @@ class	Client
 		void					setUser(std::string user);
 		void					setBuffer(std::string buf);
 		void					setFd(int fd);
-		void					setHost(int host);
+		void					setHost(std::string host);
 		void					setHandShake(bool state);
 		void					setChannelsJoined(int channelsJoined);
 		void					setChannels(std::map<std::string, Channel*> channels);
@@ -39,13 +39,15 @@ class	Client
 		void					setConnectionTime(time_t time);
 		void					setIsNetCat(bool state);
 
+
 		std::string				&getNick();
 		std::string				&getUser();
 		std::string				&getBuffer();
 		int						&getChannelsJoined();
 		std::map<std::string, Channel *>	&getChannels();
-		int						&getIp();
+		std::string				&getIp();
 		int						&getFd();
+		struct sockaddr_in		&getAddr(void);
 		bool					getRegistryState();
 		bool					getHandShake();
 		bool					getServerOper();
@@ -58,7 +60,7 @@ class	Client
 		std::string						_nickName;
 		std::string						_userName;
 		std::string						_buffer;
-		int								_ip; // or hostname?
+		std::string						_host; // or hostname?
 		int								_fd;
 		bool							_registryState; // correct password, nick, user are set
 		bool							_handShake;
@@ -67,6 +69,7 @@ class	Client
 		time_t							_connectionTime;
 		bool							_isNetCat;
 		int								_channelsJoined;
+		struct sockaddr_in				_addr;
 		std::map<std::string, Channel *>	_channels;
 };
 

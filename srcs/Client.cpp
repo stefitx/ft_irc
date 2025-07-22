@@ -17,7 +17,7 @@ Client::Client(int fd)
 	_nickName = "";
 	_userName = "";
 	_buffer = "";
-	_ip = 0;
+	_host = "";
 	_fd = fd;
 	_registryState = false;
 	_handShake = false;
@@ -25,6 +25,7 @@ Client::Client(int fd)
 	_isServerOper = false;
 	_isNetCat = false;
 	_channelsJoined = 0;
+	memset(&_addr, 0, sizeof(_addr));
 	_channels = std::map<std::string, Channel *>();
 }
 
@@ -32,7 +33,7 @@ Client::Client(const Client &other) :
 	_nickName(other._nickName),
 	_userName(other._userName),
 	_buffer(other._buffer),
-	_ip(other._ip),
+	_host(other._host),
 	_fd(other._fd),
 	_registryState(other._registryState),
 
@@ -42,6 +43,7 @@ Client::Client(const Client &other) :
 	_connectionTime(other._connectionTime),
 	_isNetCat(other._isNetCat),
 	_channelsJoined(other._channelsJoined),
+	_addr(other._addr),
 	_channels(other._channels)
 {}
 
@@ -57,12 +59,13 @@ Client &Client::operator=(const Client &other)
 		_nickName = other._nickName;
 		_userName = other._userName;
 		_buffer = other._buffer;
-		_ip = other._ip;
+		_host = other._host;
 		_isServerOper = other._isServerOper;
 		_isChannelOper = other._isChannelOper;
 		_connectionTime = other._connectionTime;
 		_isNetCat = other._isNetCat;
 		_channelsJoined = other._channelsJoined;
+		_addr = other._addr;
 		_channels = other._channels;
 	}
 	return *this;
@@ -71,7 +74,7 @@ Client &Client::operator=(const Client &other)
 std::string &Client::getNick() { return _nickName; }
 std::string &Client::getUser() { return _userName; }
 std::string &Client::getBuffer() { return _buffer; }
-int &Client::getIp() { return _ip; }
+std::string &Client::getIp() { return _host; }
 std::map<std::string, Channel *> &Client::getChannels() { return _channels; }
 int &Client::getFd() { return _fd; }
 bool Client::getRegistryState() { return _registryState; }
@@ -80,12 +83,13 @@ bool Client::getServerOper() { return _isServerOper; }
 int &Client::getChannelsJoined() { return _channelsJoined; }
 time_t Client::getConnectionTime() const { return _connectionTime; }
 bool Client::getIsNetCat() const { return _isNetCat; }
+struct sockaddr_in &Client::getAddr(void) { return (_addr); }
 
 void Client::setNick(std::string nick) { _nickName = nick; }
 void Client::setUser(std::string user) { _userName = user; }
 void Client::setBuffer(std::string buf) { _buffer += buf; }
 void Client::setFd(int fd) { _fd = fd; }
-void Client::setHost(int host) { _ip = host; }
+void Client::setHost(std::string host) { _host = host; }
 void Client::setHandShake(bool state) { _handShake = state; }
 void Client::setChannels(std::map<std::string, Channel*> _channels) { this->_channels = _channels; }
 void Client::setRegistryState(bool state) { _registryState = state; }
