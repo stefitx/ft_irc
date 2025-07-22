@@ -66,11 +66,8 @@ class Server
 	private:
 		unsigned short						_port;
 		std::string							_password;
-
-
 		int									_listenFd;
 		std::vector<struct pollfd>			_pollFds;
-
 		std::map<int, Client *>				_clients;
 		std::map<std::string, Channel *>	_channels;
 		bool								_running;
@@ -78,18 +75,15 @@ class Server
 		std::map<std::string, std::string>	_operator_credentials;
 
 		void	initListeningSocket();
-
  		void	acceptNewClient();
 		void	handleClientData(size_t pollIndex);
 		void	removeClient(size_t pollIndex);
-
 
 		// Client *lookupClientByFd(int fd);
 		void		processBuffer(Client *c);
 		Channel		*getChannel(const std::string &name);
 
 		void		createChannel(std::string channelName, std::string key, Client *client);
-
 		bool		reply(Client &cli, int code, const std::string &params, const std::string &text);
 		void		executeCmd(Client &, std::string cmd, std::vector<std::string> args);
 		void		handshake(Client &client);

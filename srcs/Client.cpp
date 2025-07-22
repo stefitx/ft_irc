@@ -25,7 +25,7 @@ Client::Client(int fd)
 	_isServerOper = false;
 	_isNetCat = false;
 	_channelsJoined = 0;
-	_channels = std::map<std::string, Channel>();
+	_channels = std::map<std::string, Channel *>();
 }
 
 Client::Client(const Client &other) :
@@ -72,7 +72,7 @@ std::string &Client::getNick() { return _nickName; }
 std::string &Client::getUser() { return _userName; }
 std::string &Client::getBuffer() { return _buffer; }
 int &Client::getIp() { return _ip; }
-const std::map<std::string, Channel> &Client::getChannels() const { return _channels; }
+std::map<std::string, Channel *> &Client::getChannels() { return _channels; }
 int &Client::getFd() { return _fd; }
 bool Client::getRegistryState() { return _registryState; }
 bool Client::getHandShake() { return _handShake; }
@@ -87,8 +87,13 @@ void Client::setBuffer(std::string buf) { _buffer += buf; }
 void Client::setFd(int fd) { _fd = fd; }
 void Client::setHost(int host) { _ip = host; }
 void Client::setHandShake(bool state) { _handShake = state; }
-void Client::setChannels(std::map<std::string, Channel> _channels) { this->_channels = _channels; }
+void Client::setChannels(std::map<std::string, Channel*> _channels) { this->_channels = _channels; }
 void Client::setRegistryState(bool state) { _registryState = state; }
 void Client::setServerOper(bool state) { _isServerOper = state; }
 void Client::setConnectionTime(time_t time) { _connectionTime = time; }
 void Client::setIsNetCat(bool state) { _isNetCat = state; }
+
+void	Client::addJoinedChannel(Channel *joinedChannel)
+{
+	_channels.insert(std::pair<std::string, Channel *>(joinedChannel->getName(), joinedChannel));
+}

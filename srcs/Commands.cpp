@@ -242,6 +242,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 			else
 			{
 				createChannel(channel, key, &client);
+				client.addJoinedChannel(getChannel(channel));
 				// std::string	arg = "JOIN " + channel;
 				// std::string arg = ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname;
 				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " JOIN " + channel + " * :" + "Welcome to the channel!\r\n");
@@ -276,7 +277,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@"  + names_list + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
 				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + _hostname + " JOIN " + channel + " * :realname", client);
-
+				client.addJoinedChannel(getChannel(channel));
 				// for (std::map<std::string, Client *>::iterator members_it = _channels[channel]->getMapMembers().begin(); members_it != _channels[channel]->getMapMembers().end(); members_it++)
 				// {
 				// 	std::map<std::string, Client *> mapa = _channels[channel]->getMapMembers();
@@ -290,14 +291,17 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				// ERR_TOOMANYCHANNELS (405)
 				return (405);
 			}
-
-			/*if (client is authorized to join) // cumplen con: key, client limit , ban - exception, invite-only - exception
+			/*int authCode = getChannel(channel)->authorizedToJoin(client, args);
+			if (authCode == 0) // client is authorized to join -> cumplen con: key, client limit , ban - exception, invite-only - exception
 			{
-
+				_channels[channel]->addMember(&client);
 			}
 			else
-				mirar esos codigos de ERR*/
-			_channels[channel]->addMember(&client);
+			{
+				//mirar esos codigos de ERR
+				//reply(authCode);
+			}
+			*/			
 		}
 		joins_it++;
 	}
@@ -447,7 +451,7 @@ int Server::dieCmd(Client &client, std::vector<std::string> args)
 
 int Server::quitCmd(Client &client, std::vector<std::string> args)
 {
-	std::map<std::string, Channel>::const_iterator it;
+	std::map<std::string, Channel *>::iterator it;
 	for (it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
         Channel* chan = getChannel(it->first);
         if (chan) {
@@ -468,8 +472,8 @@ void Server::disconnectClient(Client &client)
 	int fd = client.getFd();
 	std::cout << "Disconnecting client fd " << fd << "...\n";
 
-	const std::map<std::string, Channel>& channels = client.getChannels();
-	for (std::map<std::string, Channel>::const_iterator it = channels.begin(); it != channels.end(); ++it) {
+	std::map<std::string, Channel *>& channels = client.getChannels();
+	for (std::map<std::string, Channel *>::iterator it = channels.begin(); it != channels.end(); ++it) {
 		Channel* chan = getChannel(it->first);
 		if (chan) {
 			chan->removeMember(&client);
