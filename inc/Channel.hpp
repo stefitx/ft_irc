@@ -31,9 +31,11 @@ class	Channel
 
 		Client*		getMembers(std::string clientName);
 		std::string	getTopic();
+		Client*		getOperators(std::string name);
 
 		std::map<std::string, Client *>	&getMapMembers();
-
+		std::map<std::string, Client *>	&getMapOperators();
+		
 	private:
 		std::string					_name;
 		std::string					_password;

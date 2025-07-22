@@ -101,6 +101,21 @@ Client	*Channel::getMembers(std::string	name)
 	return (it->second);
 }
 
+Client* Channel::getOperators(std::string name)
+{
+	std::map<std::string, Client *>::iterator	it;
+
+	it = _operators.find(name);
+	if (it == _operators.end())
+		return (NULL);
+	return (it->second);
+}
+
+std::map<std::string, Client *> &Channel::getMapOperators()
+{
+	return _operators;
+}
+
 void	Channel::setPassword(const std::string key){
 	_password = key;
 }

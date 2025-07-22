@@ -18,15 +18,29 @@ SRC_DIR		:= srcs/
 INC_DIR		:= inc
 
 INCLUDES	:= -I$(INC_DIR)
+CMDS		:= cmds/
+CMD_DIR		:= $(SRC_DIR)$(CMDS)
 SRC_NAMES	:=	main.cpp \
 				Server.cpp \
 				Client.cpp \
 				Channel.cpp \
 				Handshake.cpp \
 				Commands.cpp
+CMDS_NAMES	:=	passCmd.cpp \
+				nickCmd.cpp \
+				userCmd.cpp \
+				joinCmd.cpp \
+				privmsgCmd.cpp \
+				quitCmd.cpp \
+				helpCmd.cpp \
+				operCmd.cpp \
+				dieCmd.cpp
 
-SRC			:= $(addprefix $(SRC_DIR), $(SRC_NAMES))
-OBJ			:=$(patsubst $(SRC_DIR)%.cpp,$(OBJ_DIR)%.o,$(SRC))
+ALL_SRC_NAMES	:= $(SRC_NAMES) $(addprefix $(CMDS), $(CMDS_NAMES))
+
+SRC			:= $(addprefix $(SRC_DIR), $(ALL_SRC_NAMES))
+OBJ			:=$(patsubst $(SRC_DIR)%.cpp, $(OBJ_DIR)%.o, $(SRC))
+
 DEP			:= $(OBJ:.o=.d)
 
 all: $(NAME)
