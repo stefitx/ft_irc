@@ -71,7 +71,10 @@ int    Server::nickCmd(Client &client, std::vector<std::string> args)
 			// return reply(client, 433, args[0], "] NICK: sorry, nick already in use!") ? 0 : -1;
 		it++;
 	}
+	std::cout << "Nick changed from " << client.getNick() << " to " << args[0] << "\n";
     client.setNick(args[0]);
+	std::cout << "Registry state: " << client.getRegistryState() << ", Handshake: " << client.getHandShake() << "\n";
+
 	return (0);
 }
 
@@ -168,6 +171,7 @@ std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::strin
 
 int	Server::joinCmd(Client &client, std::vector<std::string> args)
 {
+	std::cout << "ip : " << client.getIp() << std::endl;
 	std::map<std::string, std::string>	*joins;
 
 	// std::cout << "heyy im in joinn\n";
@@ -208,7 +212,9 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				client.addJoinedChannel(getChannel(channel));
 				// std::string	arg = "JOIN " + channel;
 				// std::string arg = ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname;
-				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " JOIN " + channel + " * :" + "Welcome to the channel!\r\n");
+				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
+
+				// sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + " * :" + "Welcome to the channel!\r\n");
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@" + client.getNick() + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
 
@@ -224,7 +230,9 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 			{
 				// add client to channel
 				getChannel(channel)->addMember(&client);
-				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " JOIN " + channel + " * :" + "Welcome to the channel!\r\n");
+				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
+
+				// sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " JOIN " + channel + " * :" + "Welcome to the channel!\r\n");
 				std::map<std::string, Client *>& members = _channels[channel]->getMapMembers();
 				std::string names_list;
 				for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it)
@@ -239,7 +247,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				}
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@"  + names_list + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
-				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + " * :realname", client);
+				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + " :realname", client);
 				client.addJoinedChannel(getChannel(channel));
 				// for (std::map<std::string, Client *>::iterator members_it = _channels[channel]->getMapMembers().begin(); members_it != _channels[channel]->getMapMembers().end(); members_it++)
 				// {
@@ -536,28 +544,5 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 				errorReply(client, 401, tgt, args);
 		}
 	}
-	// if (target[0] == '#')
-	// {
-	// 	Channel *channel = getChannel(target);
-	// 	if (!channel)
-	// 		return 403; // ERR_NOSUCHCHANNEL
-	// 	channel->broadcast(message, client);
-	// }
-	// else
-	// {
-	// 	std::map<int, Client *>::iterator	it;
-	// 	for(it = _clients.begin(); it != _clients.end();)
-	// 	{
-	// 		if (it->second->getNick() == target)
-	// 			break;
-	// 		it++;
-	// 	}
-	// 	if (it != _clients.end())
-	// 	{
-	// 		sendLine(*it->second, ":" + _hostname + "!" + client.getUser() + "@" + _hostname + " PRIVMSG " + target + " :" + message + "\r\n");
-	// 	}
-	// 	else
-	// 		return 401; // ERR_NOSUCHNICK
-	// }
 	return 0;
 }

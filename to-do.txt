@@ -1,7 +1,7 @@
 NICK:	- Decidir si comprobar nicks de gente que no han hecho el handshake ✅​
 USER:	- Guardar el resto de args
 		- Mirar que onda con el 0 * y el * 0 ( parseo )
-HELP ✅​
+HELP print index ✅​
 JOIN
 └ TOPIC
 └ INVITE

@@ -147,13 +147,6 @@ void Server::handleClientData(size_t idx)
 
 void Server::removeClient(size_t idx)
 {
-	// int fd = _pollFds[idx].fd;
-	// close(fd);
-	// delete _clients[fd];
-	// _clients.erase(fd);
-
-	// _pollFds[idx] = _pollFds.back();
-	// _pollFds.pop_back();
 	int fd = _pollFds[idx].fd;
 
 	if (_clients.count(fd)) {
@@ -165,23 +158,6 @@ void Server::removeClient(size_t idx)
 		_pollFds[idx] = _pollFds.back();
 	_pollFds.pop_back();
 }
-
-// Client *Server::lookupClientByFd(int fd)
-// {
-//     std::map<int, Client *>::iterator it = _clients.find(fd);
-//     return (it == _clients.end()) ? NULL : it->second;
-// }
-
-// Channel *Server::getOrCreateChannel(const std::string &name)
-// {
-//     std::map<std::string, Channel *>::iterator it = _channels.find(name);
-//     if (it != _channels.end()) return it->second;
-
-//     Channel *ch = new Channel(name);
-//     _channels[name] = ch;
-//     return ch;
-// }
-
 
 void Server::processBuffer(Client *c)
 {
@@ -256,20 +232,6 @@ void Server::run()
 			}
 		}
 
-		// while (i-- > 1)
-		// {
-		// 	// --i;
-		// 	if (_pollFds[i].revents & POLLIN)
-		// 	{
-		// 		handleClientData(i);
-		// 		continue;
-		// 	}
-		// 	if (_pollFds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
-		// 	{
-		// 		removeClient(i);
-		// 		continue;
-		// 	}
-		// }
 		// std::cout << "Current poll fds:\n";
 		// for (size_t i = 0; i < _pollFds.size(); ++i)
 		// 	std::cout << "  [" << i << "] fd=" << _pollFds[i].fd << "\n";
