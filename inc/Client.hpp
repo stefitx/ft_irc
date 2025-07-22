@@ -38,6 +38,7 @@ class	Client
 		void					setServerOper(bool state);
 		void					setConnectionTime(time_t time);
 		void					setIsNetCat(bool state);
+		void					setAddr(struct sockaddr_in addr);
 
 
 		std::string				&getNick();

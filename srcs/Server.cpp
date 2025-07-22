@@ -98,6 +98,9 @@ void Server::acceptNewClient()
 
 		_clients[fd] = new Client(fd);
 		struct pollfd pfd = {fd, POLLIN, 0};
+		_clients[fd]->setAddr(cliAddr);
+		_clients[fd]->getAddr().sin_family = AF_INET;
+		_clients[fd]->getAddr().sin_port = htons(_port); // Port is not set here, it will be set later
 		_pollFds.push_back(pfd);
 		_clients[fd]->setConnectionTime(time(NULL));
 		std::cout << "[+] Client connected fd=" << fd << "\n";

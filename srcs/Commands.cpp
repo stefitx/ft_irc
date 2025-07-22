@@ -103,6 +103,7 @@ int Server::userCmd(Client &client, std::vector<std::string> args)
 		// return reply(client, 461, "", "] USER: Not enough params") ? 0 : -1;
 	client.setUser(args[0]);
 	client.setHost(inet_ntoa(client.getAddr().sin_addr));
+	std::cout << "Client fd " << client.getFd() << " ip: " << client.getIp() << std::endl;
 	return (0);
 }
 

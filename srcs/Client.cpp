@@ -96,6 +96,8 @@ void Client::setRegistryState(bool state) { _registryState = state; }
 void Client::setServerOper(bool state) { _isServerOper = state; }
 void Client::setConnectionTime(time_t time) { _connectionTime = time; }
 void Client::setIsNetCat(bool state) { _isNetCat = state; }
+void Client::setAddr(struct sockaddr_in addr) { _addr = addr; }
+
 
 void	Client::addJoinedChannel(Channel *joinedChannel)
 {
