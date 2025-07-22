@@ -74,6 +74,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 	joins = parseJoinArgs(args);
 	if (!joins)
 		return (0);
+	
 	std::map<std::string, std::string>::iterator	joins_it = joins->begin();
 	while (joins_it != joins->end())
 	{
@@ -85,6 +86,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 			if (channel[0] != '#')
 			{
 				//ERR 403 -> "there is no such channel"
+				delete joins;
 				return (403);
 			}
 			else
@@ -146,6 +148,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 			else
 			{
 				// ERR_TOOMANYCHANNELS (405)
+				delete joins;
 				return (405);
 			}
 			int authCode = getChannel(channel)->authorizedToJoin(&client, key);

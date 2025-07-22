@@ -5,9 +5,9 @@ HELP print index ✅​
 JOIN
 └ TOPIC
 └ INVITE
-└ PART (snipet of quit)
+└ PART (snipet of quit) .
 └ MODE
-└ KICK (same as part [u need to be operator])
+└ KICK (same as part [u need to be operator]) .
 PRIVMSG ✅​
 KILL : Forcibly removes <client> from the network. 🔜
 QUIT : Disconnects the user from the server. ✅​

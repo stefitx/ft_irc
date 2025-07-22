@@ -109,6 +109,7 @@ class Server
 		Server(unsigned short port, const std::string &password);
 		~Server();
 		void	run();
+		void    stop();
 	//	bool sendLine(Client &cli, const std::string &line);
 
 } ;

@@ -237,3 +237,8 @@ void Server::run()
 		// 	std::cout << "  [" << i << "] fd=" << _pollFds[i].fd << "\n";
 	}
 }
+
+void Server::stop()
+{
+        _running = false;
+}

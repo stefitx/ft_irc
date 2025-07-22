@@ -15,6 +15,6 @@ int Server::dieCmd(Client &client, std::vector<std::string> args)
 		reply(*it->second, 400, "", "Server is shutting down. Goodbye!");
 		std::cout << "Notifying client fd " << it->second->getFd() << " about server shutdown...\n";
 	}
-	exit(0);
+	stop();
 	return (0);
 }
