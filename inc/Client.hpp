@@ -52,6 +52,7 @@ class	Client
 		time_t					getConnectionTime() const;
 		bool					getIsNetCat() const;
 		void					addJoinedChannel(Channel *joinedChannel);
+		void					removeJoinedChannel(Channel *joinedChannel);
 
 	private:
 		std::string						_nickName;

@@ -74,8 +74,6 @@ void Channel::addOperator(Client* client)
 
 void Channel::removeMember(Client* client)
 {
-	(void)client;
-  //  members.erase(client->getFd());
 	_members.erase(client->getNick());
 	_clientNum--;
 }

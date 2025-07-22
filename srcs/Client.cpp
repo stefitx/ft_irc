@@ -96,4 +96,11 @@ void Client::setIsNetCat(bool state) { _isNetCat = state; }
 void	Client::addJoinedChannel(Channel *joinedChannel)
 {
 	_channels.insert(std::pair<std::string, Channel *>(joinedChannel->getName(), joinedChannel));
+	_channelsJoined++;
+}
+
+void	Client::removeJoinedChannel(Channel *joinedChannel)
+{
+	_channels.erase(joinedChannel->getName());
+	_channelsJoined--;
 }
