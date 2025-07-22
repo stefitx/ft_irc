@@ -25,20 +25,30 @@ class	Channel
 
 		void	setChanOperator(Client *creator);
 		void	setPassword(const std::string key);
+		void	setMode(const std::string mode);
 
 		int		authorizedToJoin(Client* client, std::string key);
 
-		Client*	getMembers(std::string clientName);
+		Client*		getMembers(std::string clientName);
+		std::string	getTopic();
+
 		std::map<std::string, Client *>	&getMapMembers();
+
 	private:
 		std::string					_name;
-		std::vector<std::string>	_privileges;
-		// los privilegios van relacionados con los clientes -> look for a better container
+		std::string					_password;
 		int							_clientNum;
 		std::string					_topic;
 		int							_userLimit;
-		std::string					_password;
+		std::vector<std::string>	_invitedMembers;
+
 		std::string					_mode;
+		bool						_passwordMode;
+		bool						_inviteMode;
+		bool						_topicRestrictionMode;
+		bool						_operPrivilegeMode;
+		bool						_userLimitMode;
+
 		Client*						_chanOperator; // the first client to create the channel
 		std::string					_accessType; // muy relacionado con 'mode'
 

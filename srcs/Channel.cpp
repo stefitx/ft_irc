@@ -6,23 +6,28 @@
 Channel::Channel(std::string name) {
 	_name = name;
 	_clientNum = 0;
+	_password = "";
 	_userLimit = 0;
 	_chanOperator = NULL;
 	_topic = "";
-	_password = "";
-	_privileges.clear();
 	_mode = "";
 	_accessType = "";
+	_invitedMembers.clear();
+	_passwordMode = false;
+	_inviteMode = false;
+	_topicRestrictionMode = true;
+	_operPrivilegeMode = false;
+	_userLimitMode = false;
 	//members = std::map<int, Client *>();
 }
 
 Channel::Channel(const Channel &other) :
 	_name(other._name),
-	_privileges(other._privileges),
+	_password(other._password),
 	_clientNum(other._clientNum),
 	_topic(other._topic),
 	_userLimit(other._userLimit),
-	_password(other._password),
+	_invitedMembers(other._invitedMembers),
 	_mode(other._mode),
 	_chanOperator(other._chanOperator),
 	_accessType(other._accessType),
@@ -40,11 +45,11 @@ Channel &Channel::operator=(const Channel &other) {
 		_userLimit = other._userLimit;
 		_topic = other._topic;
 		_password = other._password;
-		_privileges = other._privileges;
 		_mode = other._mode;
 		_accessType = other._accessType;
 		_members = other._members;
 		_operators = other._operators;
+		_invitedMembers = other._invitedMembers;
 	}
 	return *this;
 }
@@ -100,6 +105,24 @@ void	Channel::setPassword(const std::string key){
 	_password = key;
 }
 
+void	Channel::setMode(const std::string mode)
+{
+	_mode = mode;
+	for (size_t i = 0; i < mode.size(); i++)
+	{
+		if (mode[i] == 'i')
+			_inviteMode = true;
+		if (mode[i] == 't')
+			_topicRestrictionMode = true;
+		if (mode[i] == 'k')
+			_passwordMode = true;
+		if (mode[i] == 'o')
+			_operPrivilegeMode = true;
+		if (mode[i] == 'l')
+			_userLimitMode = true;
+	}
+}
+
 void	Channel::setChanOperator(Client *creator)
 {
 	_chanOperator = creator;
@@ -110,20 +133,26 @@ std::map<std::string, Client *>	&Channel::getMapMembers()
 	return (_members);
 }
 
+std::string	Channel::getTopic(){
+	return _topic;
+}
+
 int	Channel::authorizedToJoin(Client *client, std::string key)
 {
 	(void)client;
-	if (!_password.empty()) // (+k)
+	if (_passwordMode) // (+k)
 	{
 		if (key.empty() || key != _password)
 			return (475); // ERR_BADCHANNELKEY
 	}
 	if (_clientNum + 1 >= _userLimit) // (+l)
 		return (471); // ERR_CHANNELISFULL
-	/*if ( mode == invite only)
-	{
 
-	}
-	*/
+	if (_inviteMode)  //(+i)
+		return (473); // ERR_INVITEONLYCHAN
+	
+	if (_topicRestrictionMode /*&& //cliente no es channel operator*/)
+		return (482); // no puede cambiar el _topic -> ERR_CHANOPRIVSNEEDED 482 
+	
 	return (0);
 }

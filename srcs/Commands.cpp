@@ -142,6 +142,7 @@ void	Server::createChannel(std::string channelName, std::string key, Client *cli
 	newChannel->addMember(client);
 	newChannel->addOperator(client);
 	newChannel->setChanOperator(client);
+	newChannel->setMode("Cnst");
 
 	_channels[channelName] = newChannel;
 }
@@ -245,6 +246,11 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 					// Now you can use member_nick in your reply
 					// Example: sendLine(client, ":" + member_nick + "!" + ... );
 				}
+				if (!getChannel(channel)->getTopic().empty())
+				{
+					// SEND :molybdenum.libera.chat 332 martaa #holiboli :iwantanothertopic (RPL_TOPIC)
+					// SEND 333 (RPL_TOPICWHOTIME)
+				}
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@"  + names_list + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
 				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + " :realname", client);
@@ -264,14 +270,9 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 			}
 			int authCode = getChannel(channel)->authorizedToJoin(&client, key);
 			if (authCode == 0) // client is authorized to join -> cumplen con: key, client limit , ban - exception, invite-only - exception
-			{
 				_channels[channel]->addMember(&client);
-			}
-			else
-			{
-				//mirar esos codigos de ERR
-				//reply(authCode);
-			}
+			// errorReply(authcode);
+
 		}
 		joins_it++;
 	}

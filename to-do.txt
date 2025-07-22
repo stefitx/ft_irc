@@ -1,22 +1,20 @@
 NICK:	- Decidir si comprobar nicks de gente que no han hecho el handshake ✅​
-USER:	- Guardar el resto de args
+USER:	- Guardar el resto de args 🔜
 		- Mirar que onda con el 0 * y el * 0 ( parseo )
 HELP print index ✅​
 JOIN
 └ TOPIC
 └ INVITE
-└ PART
+└ PART (snipet of quit)
 └ MODE
-└ KICK
+└ KICK (same as part)
 PRIVMSG ✅​
-KILL : Forcibly removes <client> from the network.
+KILL : Forcibly removes <client> from the network. 🔜
 QUIT : Disconnects the user from the server. ✅​
 DIE : who is server operator? Instructs the server to shut down. ✅​
+OPER : ✅​
 ------
 LIST
 NAMES
 ADMIN
 
-!Figure out why this appears in Hexchat when connecting with the wrong password: ✅​
-* have not registered
-* incorrect
