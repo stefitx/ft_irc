@@ -97,7 +97,6 @@ void Server::acceptNewClient()
 		}
 
 		_clients[fd] = new Client(fd);
-
 		struct pollfd pfd = {fd, POLLIN, 0};
 		_pollFds.push_back(pfd);
 		_clients[fd]->setConnectionTime(time(NULL));
@@ -111,8 +110,8 @@ void Server::handleClientData(size_t idx)
 	Client *c = _clients[fd];
 	char buf[1024];
 
-	while (true)
-{
+// 	while (true)
+// {
 		ssize_t bytes = recv(c->getFd(), buf, sizeof(buf), MSG_DONTWAIT);
 		if (bytes == -1)
 		{
@@ -140,7 +139,7 @@ void Server::handleClientData(size_t idx)
 				return;
 			processBuffer(c); // Stub function for later parts
 		}
-	}
+	// }
 }
 
 void Server::removeClient(size_t idx)
@@ -155,6 +154,7 @@ void Server::removeClient(size_t idx)
 	int fd = _pollFds[idx].fd;
 
 	if (_clients.count(fd)) {
+		close(fd);
 		delete _clients[fd];
 		_clients.erase(fd);
 	}
@@ -252,6 +252,7 @@ void Server::run()
 				continue;
 			}
 		}
+
 		// while (i-- > 1)
 		// {
 		// 	// --i;
@@ -260,7 +261,7 @@ void Server::run()
 		// 		handleClientData(i);
 		// 		continue;
 		// 	}
-		// 	else if (_pollFds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
+		// 	if (_pollFds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
 		// 	{
 		// 		removeClient(i);
 		// 		continue;

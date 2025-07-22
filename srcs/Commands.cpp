@@ -473,12 +473,14 @@ void Server::disconnectClient(Client &client)
 		Channel* chan = getChannel(it->first);
 		if (chan) {
 			chan->removeMember(&client);
-			reply(client, 404, it->first, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "Disconnected ()" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
+			// hacer broadcast a los miembros del canal
+			reply(client, 404, it->first, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "holis" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
 			std::cout << "Disconnected ()\n";
 		}
 	}
 	for (size_t i = 0; i < _pollFds.size(); ++i) {
 		if (_pollFds[i].fd == fd) {
+			std::cout << "Removing client fd " << fd << " from pollFds...\n";
 			removeClient(i);
 			break;
 		}
