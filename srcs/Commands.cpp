@@ -45,6 +45,7 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		case HELP: code = helpCmd(client, args); break;
 		case DIE: code = dieCmd(client, args); break;
 		case QUIT: code = quitCmd(client, args); break;
+		case KILL: code = killCmd(client, args); break;
 		case UNKNOWN:
 		{
 			if(cmd == "WHO" || cmd == "CAP")
@@ -84,6 +85,7 @@ CommandType Server::isCommand(const std::string &cmd)
 	else if (cmd == "OPER" || cmd == "oper") return (OPER);
 	else if (cmd == "PRIVMSG" || cmd == "privmsg")return (PRIVMSG);
 	else if (cmd == "DIE" || cmd == "die") return (DIE);
+	else if (cmd == "KILL") return (KILL);
 	// else if (cmd == "CAP") return (CAP);
 	else
 		return (UNKNOWN);

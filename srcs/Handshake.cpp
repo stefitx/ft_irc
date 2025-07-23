@@ -87,6 +87,7 @@ void Server::errorReply(Client &cli, int code, std::string str, std::vector<std:
 		case 412: line += "No text to send"; break;
 		case 421: line += "[" + str + "]: Unknown command"; break;
 		case 433: line += args[0] + ": Nickname is already in use"; break;
+		case 442: line += args[0] + ": You're not on that channel"; break;
 		case 451: line += "You have not registered"; break;
 		case 461: line += "[" + str + "]: Not enough parameters"; break;
 		case 462: line += "You may not reregister"; break;

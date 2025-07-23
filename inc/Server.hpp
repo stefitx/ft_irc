@@ -51,6 +51,7 @@ enum CommandType
 	PRIVMSG,
 	OPER,
 	DIE,
+	KILL,
 	UNKNOWN
 	// NOTICE
 };
@@ -102,6 +103,7 @@ class Server
 		int operCmd(Client&, std::vector<std::string> args);
 		int dieCmd(Client&, std::vector<std::string> args);
 		int quitCmd(Client&, std::vector<std::string> args);
+		int killCmd(Client&, std::vector<std::string> args);
 		int privmsgCmd(Client&, std::vector<std::string> args);
 
 
