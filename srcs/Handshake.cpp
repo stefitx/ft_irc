@@ -93,6 +93,12 @@ void Server::errorReply(Client &cli, int code, std::string str, std::vector<std:
 		case 464: line += "Password incorrect"; break;
 		case 481: line += "Permission Denied- You're not an IRC operator"; break;
 		case 524: line = args[0] + ": No help available on this topic"; break;
+		case 441: line += args[1] + " " + args[0] + " :They aren't on that channel"; break;
+		case 442: line += args[0] + " :You're not on that channel"; break;
+		case 482: line += args[0] + " :You're not channel operator"; break;
+		case 471: line += args[0] + " :Cannot join channel (+l)";break;
+        case 473:line += args[0] + " :Cannot join channel (+i)";break;
+        case 475:line += args[0] + " :Cannot join channel (+k)";break;
 		default: line += "Unknown error";
 	}
 	line +=  "\r\n";

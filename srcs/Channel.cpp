@@ -80,6 +80,13 @@ void Channel::addOperator(Client* client)
 void Channel::removeMember(Client* client)
 {
 	_members.erase(client->getNick());
+	if (_chanOperator == client)
+	{
+        if (!_operators.empty())
+            _chanOperator = _operators.begin()->second;
+        else
+            _chanOperator = NULL;
+    }
 	_clientNum--;
 }
 
@@ -172,16 +179,13 @@ int	Channel::authorizedToJoin(Client *client, std::string key)
 	return (0);
 }
 
-// void Channel::broadcast(const std::string &msg, Client *exclude)
-// {
-//     for (std::map<std::string, Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
-// 		{
-// 			if (exclude && it->second == exclude)          // skip only if we were asked to
-// 				continue;
+bool Channel::isMember(Client *c) const
+{
+    return _members.find(c->getNick()) != _members.end();
+}
 
-// 			sendLine(*(it->second), msg + "\r\n");
-// 	#ifdef DEBUG
-// 			std::cout << msg << '\n';
-// 	#endif
-// 		}
-// }
+bool Channel::isOperator(Client *c) const
+{
+    return _operators.find(c->getNick()) != _operators.end()
+           || (_chanOperator && _chanOperator == c);
+}

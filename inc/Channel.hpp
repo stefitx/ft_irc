@@ -32,6 +32,8 @@ class	Channel
 		Client*		getMembers(std::string clientName);
 		std::string	getTopic();
 		Client*		getOperators(std::string name);
+		bool isMember(Client *c) const;
+		bool isOperator(Client *c) const;
 
 		std::map<std::string, Client *>	&getMapMembers();
 		std::map<std::string, Client *>	&getMapOperators();

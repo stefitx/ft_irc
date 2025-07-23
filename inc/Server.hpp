@@ -103,6 +103,7 @@ class Server
 		int dieCmd(Client&, std::vector<std::string> args);
 		int quitCmd(Client&, std::vector<std::string> args);
 		int privmsgCmd(Client&, std::vector<std::string> args);
+		int kickCmd(Client &issuer, std::vector<std::string> args);
 
 
 	public:
