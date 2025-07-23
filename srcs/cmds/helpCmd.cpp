@@ -1,6 +1,5 @@
 #include "../../inc/Server.hpp"
 
-
 int Server::helpCmd(Client &client, std::vector<std::string> args)
 {
 	if(args.empty())
@@ -28,7 +27,7 @@ int Server::helpCmd(Client &client, std::vector<std::string> args)
 		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t PART" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PART [<channel>] [<reason>], leaves the channel, by default the current one\r\n");
 		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t TOPIC" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: TOPIC [<topic>], sets the topic if one is given, else shows the current topic\r\n");
 		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t INVITE" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: INVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t KICK" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: KICK <nick> [reason], kicks the nick from the current channel (needs chanop)\r\n");
+		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t KICK" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage:  Usage: KICK <channel> <user>[,user2...] [reason]\r\n");
 		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t MODE" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: MODE <channel> [<mode>]\r\n");
 		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t PRIVMSG" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PRIVMSG <target> :<message>\r\n");
 		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t OPER" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: OPER <username> <password>, grants operator privileges\r\n");
@@ -72,11 +71,7 @@ int Server::helpCmd(Client &client, std::vector<std::string> args)
 		else if (args[0] == "KILL" || args[0] == "kill")
 			sendLine(client, "\t\tKILL <nickname> <comment>, disconnects target from the current server\r\n");
 		else
-		{
-			// ERR_HELPNOTFOUND (524) -> "client> <subject> :No help available on this topic"
-			std::cerr << "[" << client.getFd() << "] HELP: No help available on this topic\n";
-			return (524);
-		}
+			return (524); // ERR_HELPNOTFOUND (524)
 	}
 	return (0);
 }

@@ -92,25 +92,27 @@ class Server
 		void		disconnectClient(Client &client);
 		void		errorReply(Client &cli, int code, std::string cmd, std::vector<std::string> args);
 		std::string	itoa3(int code);
+		std::map<std::string, std::string>	*parseJoinArgs(std::vector<std::string> args);
 
 		// COMMANDS TO BE RECEIVED
 		int	nickCmd(Client&, std::vector<std::string> args);
 		int	userCmd(Client&, std::vector<std::string> args);
 		int	passCmd(Client&, std::vector<std::string> args);
-		std::map<std::string, std::string>	*parseJoinArgs(std::vector<std::string> args);
 		int	joinCmd(Client&, std::vector<std::string> args);
 		int	helpCmd(Client&, std::vector<std::string> args);
 		int operCmd(Client&, std::vector<std::string> args);
-		int dieCmd(Client&, std::vector<std::string> args);
 		int quitCmd(Client&, std::vector<std::string> args);
 		int killCmd(Client&, std::vector<std::string> args);
 		int privmsgCmd(Client&, std::vector<std::string> args);
+		int kickCmd(Client &issuer, std::vector<std::string> args);
+		int dieCmd(Client&);
 
 
 	public:
 		Server(unsigned short port, const std::string &password);
 		~Server();
 		void	run();
+		void    stop();
 	//	bool sendLine(Client &cli, const std::string &line);
 
 } ;

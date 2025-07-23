@@ -15,7 +15,6 @@ Channel::Channel(std::string name) {
 	_inviteMode = false;
 	_topicRestrictionMode = true;
 	_userLimitMode = false;
-	//members = std::map<int, Client *>();
 }
 
 Channel::Channel(const Channel &other) :
@@ -73,12 +72,19 @@ void Channel::addOperator(Client* client)
 void Channel::removeMember(Client* client)
 {
 	_members.erase(client->getNick());
+	for(std::map<std::string, Client *>::iterator it = _operators.begin(); it != _operators.end(); ++it)
+	{
+		if (it->second == client)
+		{
+			removeOperator(client);
+			break;
+		}
+	}
 	_clientNum--;
 }
 
 void Channel::removeOperator(Client* client)
 {
-	(void)client;
 	_operators.erase(client->getNick());
 }
 
@@ -146,11 +152,6 @@ void	Channel::setMode(const std::string mode)
 	}
 }
 
-/*void	Channel::setChanOperator(Client *creator)
-{
-	_chanOperator = creator;
-}*/
-
 std::map<std::string, Client *>	&Channel::getMapMembers()
 {
 	return (_members);
@@ -168,26 +169,20 @@ int	Channel::authorizedToJoin(Client *client, std::string key)
 			return (475); // ERR_BADCHANNELKEY
 	}
 	if (_userLimitMode && _clientNum + 1 >= _userLimit) // (+l)
-		return (471); // ERR_CHANNELISFULL 	//:iridium.libera.chat 471 chaa #holiboli :Cannot join channel (+l) - channel is full, try again later
-
+		return (471); // ERR_CHANNELISFULL
 	if (_inviteMode && !isInvitedUser(client))  //(+i)
 		return (473); // ERR_INVITEONLYCHAN
-	
-	if (_topicRestrictionMode && !isChannelOperator(client->getNick())) // (+t)
-		return (482); // no puede cambiar el _topic -> ERR_CHANOPRIVSNEEDED 482 
 	return (0);
 }
 
-// void Channel::broadcast(const std::string &msg, Client *exclude)
-// {
-//     for (std::map<std::string, Client *>::iterator it = _members.begin(); it != _members.end(); ++it)
-// 		{
-// 			if (exclude && it->second == exclude)          // skip only if we were asked to
-// 				continue;
+bool Channel::isMember(Client *c) const
+{
+    return _members.find(c->getNick()) != _members.end();
+}
 
-// 			sendLine(*(it->second), msg + "\r\n");
-// 	#ifdef DEBUG
-// 			std::cout << msg << '\n';
-// 	#endif
-// 		}
-// }
+bool Channel::isOperator(Client *c) const
+{
+    if (_operators.find(c->getNick()) != _operators.end())
+		return true;
+	return false;
+}

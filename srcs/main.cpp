@@ -13,6 +13,15 @@
 #include "../inc/Server.hpp"
 #include <cstdlib>
 #include <iostream>
+#include <csignal>
+
+static Server *g_server = NULL;
+
+static void handleSignal(int)
+{
+    if (g_server)
+        g_server->stop();
+}
 
 static unsigned short parsePort(const char *arg)
 {
@@ -45,6 +54,14 @@ int main(int argc, char **argv)
     }
     pass = argv[2];
     Server srv(port, pass);
+	g_server = &srv;
+
+    struct sigaction sa;
+    sa.sa_handler = handleSignal;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
     srv.run();
     return (0);
 }

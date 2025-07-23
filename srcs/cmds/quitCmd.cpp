@@ -10,7 +10,6 @@ void Server::disconnectClient(Client &client)
 		Channel* chan = getChannel(it->first);
 		if (chan) {
 			chan->removeMember(&client);
-			// hacer broadcast a los miembros del canal
 			reply(client, 404, it->first, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "Disconnected()" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
 		}
 	}

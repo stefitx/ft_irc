@@ -42,8 +42,7 @@ std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::strin
 			channelKey = keys[i];
 		else
 			channelKey = "";
-        (*joins)[channels[i]] = channelKey;
-		std::cout << "channel " << channels[i] << ", key: " << channelKey << std::endl;
+		(*joins)[channels[i]] = channelKey;
 	}
 	return (joins);
 }
@@ -54,7 +53,6 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 	if (!client.getRegistryState())
 	{
 		//ERR_NOTREGISTERED (451)
-		std::cout << "You haven't registered yet!\n";
 		return (451);
 	}
 	if (!args.size())
@@ -62,12 +60,12 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 	if (args.size() == 1 && args[0] == "0")
 	{
 		//partCmd(client, NULL);
-		std::cout << "should be parting from all channels he is in\n";
 		return (0);
 	}
 	joins = parseJoinArgs(args);
 	if (!joins)
 		return (0);
+
 	std::map<std::string, std::string>::iterator	joins_it = joins->begin();
 	while (joins_it != joins->end())
 	{
@@ -76,22 +74,15 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		if (!getChannel(joins_it->first)) // si no encuentras el canal
 		{
 			if (channel[0] != '#')
-				return (403); //ERR "there is no such channel"
+				return (delete joins, 403); //ERR "there is no such channel"
 			else
 			{
 				createChannel(channel, key, &client);
 				client.addJoinedChannel(getChannel(channel));
-				// std::string	arg = "JOIN " + channel;
-				// std::string arg = ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname;
-				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
 
-				// sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + " * :" + "Welcome to the channel!\r\n");
+				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@" + client.getNick() + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
-
-				// RPL_NAMEREPLY 353
-				// send RPL_ENDOFNAMES 366
-				// reply(client, 0, "", );
 			}
 
 		}
@@ -99,11 +90,15 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		{
 			if ( client.getChannelsJoined() <= CHANLIMITNUM - 1)
 			{
-				// add client to channel
-				getChannel(channel)->addMember(&client);
+				int authCode = getChannel(channel)->authorizedToJoin(&client, key);
+				if (authCode == 0)
+					_channels[channel]->addMember(&client);	// add client to channel
+				else
+				{
+					errorReply(client, authCode, channel, args);
+					continue;
+				}
 				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
-
-				// sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + " JOIN " + channel + " * :" + "Welcome to the channel!\r\n");
 				std::map<std::string, Client *>& members = _channels[channel]->getMapMembers();
 				std::string names_list;
 				for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it)
@@ -113,15 +108,12 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 					if (!names_list.empty())
 						names_list += " ";
 					names_list += member_nick;
-					// Now you can use member_nick in your reply
 				}
 				if (!getChannel(channel)->getTopic().empty())
 				{
 					// SEND RPL_TOPIC 332
 					sendLine(client, ":" + _hostname + " 332 " + client.getNick() + channel + " :" + getChannel(channel)->getTopic() + "\r\n");
-
-					// SEND 333 (RPL_TOPICWHOTIME) :copper.libera.chat 333 mmmmar #holiboli martalop!~martalop@195.55.43.195 1753262143
-					//sendLine(client, ":" + _hostname + " 333 " + client.getNick() + channel +  + "\r\n");
+					// SEND RPL_TOPICWHOTIME 333
 				}
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@"  + names_list + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
@@ -129,13 +121,10 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				client.addJoinedChannel(getChannel(channel));
 			}
 			else
-				return (405); // ERR_TOOMANYCHANNELS 
-			int authCode = getChannel(channel)->authorizedToJoin(&client, key);
-			std::cout << "auth code = " << authCode << std::endl;
-			if (authCode == 0)
-				_channels[channel]->addMember(&client);
-			else
-				errorReply(client, authCode, channel, args);
+			{
+				delete joins;
+				return (405); // ERR_TOOMANYCHANNELS (405)
+			}
 		}
 		joins_it++;
 	}

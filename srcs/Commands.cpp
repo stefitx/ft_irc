@@ -6,9 +6,6 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 {
 	int code = 0;
 	args.erase(args.begin());
-	// std::cout << "nick = " << client.getNick() << std::endl;
-	// std::cout << "pass = " << client.getRegistryState() << std::endl;
-	// std::cout << "user = " << client.getUser() << std::endl;
 
 	if(isCommand(cmd) == UNKNOWN && cmd != "CAP" && cmd != "WHO")
 		return (errorReply(client, 421, cmd, args), void());
@@ -24,7 +21,6 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 			code = passCmd(client, args);
 		if((client.getRegistryState() && client.getNick() != "" && client.getUser() != "") && !client.getHandShake())
 			handshake(client);
-		std::cout << RED << "[" << code << "] " << RESET << std::endl;
 		if (code)
 			errorReply(client, code, cmd, args);
 		return ;
@@ -38,21 +34,19 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		case PART: break;//code = partCmd(client, args); break;
 		case TOPIC: break;// code = topic(client, args); break;
 		case INVITE: break;// code = invite(client, args); break;
-		case KICK: break;// code = kick(client, args); break;
+		case KICK: code = kickCmd(client, args); break;
 		case MODE: break;// code =mode(client, args); break;
 		case OPER: code = operCmd(client, args); break;
 		case PRIVMSG: code = privmsgCmd(client, args); break;
 		case HELP: code = helpCmd(client, args); break;
-		case DIE: code = dieCmd(client, args); break;
+		case DIE: code = dieCmd(client); break;
 		case QUIT: code = quitCmd(client, args); break;
 		case KILL: code = killCmd(client, args); break;
 		case UNKNOWN:
 		{
 			if(cmd == "WHO" || cmd == "CAP")
 				return;
-				// ERR_UNKNOWNCOMMAND (421) (send to client)
-			code = 421;
-			std::cout << cmd << ": Unknow command\n";
+			code = 421; // ERR_UNKNOWNCOMMAND (421)
 		}
 	}
 	if (code)
@@ -86,7 +80,6 @@ CommandType Server::isCommand(const std::string &cmd)
 	else if (cmd == "PRIVMSG" || cmd == "privmsg")return (PRIVMSG);
 	else if (cmd == "DIE" || cmd == "die") return (DIE);
 	else if (cmd == "KILL") return (KILL);
-	// else if (cmd == "CAP") return (CAP);
 	else
 		return (UNKNOWN);
 }

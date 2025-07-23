@@ -35,6 +35,8 @@ CMDS_NAMES	:=	passCmd.cpp \
 				helpCmd.cpp \
 				operCmd.cpp \
 				dieCmd.cpp \
+				partCmd.cpp \
+				kickCmd.cpp \
 				killCmd.cpp
 
 ALL_SRC_NAMES	:= $(SRC_NAMES) $(addprefix $(CMDS), $(CMDS_NAMES))
