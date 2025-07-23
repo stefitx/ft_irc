@@ -1,5 +1,31 @@
 #include "../inc/Server.hpp"
 
+std::string Server::colorLine(Client &client, const std::string &line, const std::string &color)
+{
+	if (color == "WHITE")
+		return ((client.getIsNetCat() ? std::string(WHITE) : std::string("\00300"))) + line  + (client.getIsNetCat() ? std::string(RESET) : std::string("\00317"));
+	else if (color == "BLACK")
+		return ((client.getIsNetCat() ? std::string(BLACK) : std::string("\00301")) + line + (client.getIsNetCat() ? std::string(RESET) : std::string("\00317")));
+	else if (color == "BLUE")
+		return ((client.getIsNetCat() ? std::string(BLUE) : std::string("\00302")) + line + (client.getIsNetCat() ? std::string(RESET) : std::string("\00317")));
+	else if (color == "GREEN")
+		return ((client.getIsNetCat() ? std::string(GREEN) : std::string("\00303")) + line + (client.getIsNetCat() ? std::string(RESET) : std::string("\00317")));
+	else if(color == "RED")
+		return ((client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + line + (client.getIsNetCat() ? std::string(RESET) : std::string("\00317")));
+	else if (color == "PURPLE" || color == "MAGENTA")
+		return ((client.getIsNetCat() ? std::string(MAGENTA) : std::string("\00306")) + line + (client.getIsNetCat() ? std::string(RESET) : std::string("\00317")));
+	else if (color == "ORANGE")
+		return ((client.getIsNetCat() ? std::string(ORANGE) : std::string("\00307")) + line + (client.getIsNetCat() ? std::string(RESET) : std::string("\00317")));
+	else if (color == "YELLOW")
+		return ((client.getIsNetCat() ? std::string(YELLOW) : std::string("\00308")) + line + (client.getIsNetCat() ? std::string(RESET) : std::string("\00317")));
+	else if (color == "CYAN")
+		return ((client.getIsNetCat() ? std::string(CYAN) : std::string("\00311")) + line + (client.getIsNetCat() ? std::string(RESET) : std::string("\00317")));
+	else if(color == "RESET")
+		return "\017" + line;
+	else
+		return line; // No color applied
+}
+
 bool sendLine(Client &cli, const std::string &line)
 {
 	const char *data;
@@ -71,8 +97,7 @@ void Server::handshake(Client &c)
     reply(c, 3,  "", "This server was created " + std::string(datebuf));
     reply(c, 4,  _hostname + " 0.1 aiwro imnptkol", "");
     reply(c, 5,  "USERLEN=12 CHANTYPES=# CHANMODES=,ntkl", "are supported by this server");
-
-    std::cout << GREEN << "[fd " << c.getFd() << "] handshake sent" << RESET << '\n';
+	noticeCmd(c, vectorSplit(c.getNick() + " " + colorLine(c, "Hello", "GREEN") + " " + colorLine(c, c.getNick(), "BLUE") + colorLine(c, ", Welcome to our IRC server! Hope you enjoy.", "GREEN"), ' '));
 }
 
 void Server::errorReply(Client &cli, int code, std::string str, std::vector<std::string> args)

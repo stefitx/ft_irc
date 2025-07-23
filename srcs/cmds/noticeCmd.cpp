@@ -1,11 +1,13 @@
 #include "../../inc/Server.hpp"
 
-int Server::privmsgCmd(Client &client, std::vector<std::string> args)
+void Server::noticeCmd(Client &client, std::vector<std::string> args)
 {
 	if (args.empty())
-		return (411); // ERR_NOTEXTTOSEND (411)
+		return ; // ERR_NOTEXTTOSEND (411)
 	else if (args.size() < 2)
-		return (412); // ERR_NOTEXTTOSEND (412)
+		return ; // ERR_NOTEXTTOSEND (412)
+
+
 
 	std::vector<std::string> targets;
 	std::stringstream ss(args[0]);
@@ -16,7 +18,7 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 		if (!target.empty())
 			targets.push_back(target);
 	}
-	
+
 	std::string message;
 	for (size_t i = 1; i < args.size(); ++i)
 	{
@@ -34,10 +36,10 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 			Channel *channel = getChannel(tgt);
 			if (!channel)
 			{
-				errorReply(client, 401, tgt, args);
+				// errorReply(client, 401, tgt, args);
 				continue;
 			}
-			channel->broadcast(":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " PRIVMSG " + tgt + " :" + message, client);
+			channel->broadcast(":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " NOTICE " + tgt + " :" + message, client);
 		}
 		else
 		{
@@ -46,14 +48,17 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 			{
 				if (it->second->getNick() == tgt)
 				{
-					sendLine(*it->second, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " PRIVMSG " + tgt + " :" + message + "\r\n");
+					// 									:crmanzan__!crmanzan@127.0.0.1 NOTICE crmanzan_ :hola
+					// @time=2025-07-23T15:10:15.106Z 	:crmanzan__!~crmanzan@195.55.43.195 NOTICE cristy :jeje
+					sendLine(*it->second, ":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " NOTICE " + tgt + " :" + message + "\r\n");
 					found = true;
 					break;
 				}
 			}
 			if (!found)
-				errorReply(client, 401, tgt, args);
+				// errorReply(client, 401, tgt, args);
+				continue; // ERR_NOSUCHNICK (401)
 		}
 	}
-	return 0;
+	return ;
 }

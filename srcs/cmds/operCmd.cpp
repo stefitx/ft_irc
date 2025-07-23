@@ -16,6 +16,6 @@ int Server::operCmd(Client &client, std::vector<std::string> args)
 		return (464); // ERR_PASSWDMISMATCH (464)
 	client.setServerOper(true);
 	// RPL_YOUREOPER (381)
-	reply(client, 381, "", (client.getIsNetCat() ? std::string(GREEN) : std::string("\00303")) + "You are now an IRC operator" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
+	reply(client, 381, "", colorLine(client, "You are now an IRC operator", "GREEN"));
 	return (0);
 }

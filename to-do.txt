@@ -11,7 +11,7 @@ JOIN
 
 └ KICK (same as part [u need to be operator]) .
 PRIVMSG ✅​
-KILL : Forcibly removes <client> from the network. 🔜
+KILL : Forcibly removes <client> from the network. ✅​
 QUIT : Disconnects the user from the server. ✅​
 DIE : who is server operator? Instructs the server to shut down. ✅​
 OPER : ✅​

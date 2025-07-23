@@ -52,8 +52,8 @@ enum CommandType
 	OPER,
 	DIE,
 	KILL,
+	NOTICE,
 	UNKNOWN
-	// NOTICE
 };
 
 
@@ -93,6 +93,8 @@ class Server
 		void		errorReply(Client &cli, int code, std::string cmd, std::vector<std::string> args);
 		std::string	itoa3(int code);
 		std::map<std::string, std::string>	*parseJoinArgs(std::vector<std::string> args);
+		std::vector<std::string> vectorSplit(const std::string& str, char delim);
+		std::string colorLine(Client &client, const std::string &line, const std::string &color);
 
 		// COMMANDS TO BE RECEIVED
 		int	nickCmd(Client&, std::vector<std::string> args);
@@ -105,6 +107,7 @@ class Server
 		int killCmd(Client&, std::vector<std::string> args);
 		int privmsgCmd(Client&, std::vector<std::string> args);
 		int kickCmd(Client &issuer, std::vector<std::string> args);
+		void noticeCmd(Client &issuer, std::vector<std::string> args);
 		int dieCmd(Client&);
 
 

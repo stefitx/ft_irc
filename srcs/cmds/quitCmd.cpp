@@ -10,7 +10,6 @@ void Server::disconnectClient(Client &client)
 		Channel* chan = getChannel(it->first);
 		if (chan) {
 			chan->removeMember(&client);
-			reply(client, 404, it->first, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "Disconnected()" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
 		}
 	}
 	for (size_t i = 0; i < _pollFds.size(); ++i) {

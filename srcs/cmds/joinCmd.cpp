@@ -1,6 +1,6 @@
 #include "../../inc/Server.hpp"
 
-std::vector<std::string> vectorSplit(const std::string& str, char delim)
+std::vector<std::string> Server::vectorSplit(const std::string& str, char delim)
 {
     std::vector<std::string> tokens;
     std::string token;

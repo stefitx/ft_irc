@@ -16,8 +16,18 @@ int Server::killCmd(Client &client, std::vector<std::string> args)
 				return (442); // ERR_NOTONCHANNEL
 			std::string killMessage = args[1];
 			std::string killLine = ":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " KILL " + targetNick + killMessage;
-			reply(*targetClient, 403, targetNick, killLine);
-			//broadcast to all clients -> to be continued
+			sendLine(*targetClient, killLine + "\r\n");
+			std::map<std::string, Channel *>::iterator it;
+			for (it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
+				Channel* chan = getChannel(it->first);
+				std::cout << "chan: " << chan->getName() << std::endl;
+				std::cout << "it: " << it->first << std::endl;
+				if (chan) {
+					noticeCmd(client, vectorSplit(chan->getName() + " KILLER " + client.getNick() + " killed " + targetNick + " and gave this reason" + killMessage, ' '));
+					chan->broadcast(killLine, client);
+					chan->removeMember(&client);
+				}
+			}
 			disconnectClient(*targetClient);
 			return (0);
 		}

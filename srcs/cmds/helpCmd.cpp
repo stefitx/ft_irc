@@ -10,7 +10,7 @@ int Server::helpCmd(Client &client, std::vector<std::string> args)
 		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + ": NICK\t\tUSER\t\tPASS   \t\tQUIT\r\n");
 		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + ": JOIN\t\tPART\t\tTOPIC  \t\tINVITE\r\n");
 		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + ": KICK\t\tMODE\t\tPRIVMSG\t\tOPER\r\n");
-		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + ": WELP\t\tDIE\t\tKILL\r\n");
+		sendLine(client, ":" + _hostname + " 705 " + client.getNick() + ": WELP\t\tDIE\t\tKILL   \t\tNOTICE\r\n");
 		sendLine(client, "\r\n");
 		sendLine(client, ":" + _hostname + " 706 " + client.getNick() + ": Type /WELP <command> for more information, or /WELP -l\r\n");
 		sendLine(client, "\r\n");
@@ -19,20 +19,21 @@ int Server::helpCmd(Client &client, std::vector<std::string> args)
 	{
 		sendLine(client, "\r\n");
 		sendLine(client, " Commands Available:\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t NICK" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: NICK <nickname>, sets your nick\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t USER" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: USER <username> <hostname> <servername> :<realname>\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t PASS" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PASS <password>\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t QUIT" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: QUIT [<reason>], disconnects from the current server\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t JOIN" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: JOIN <channel>, joins the channel\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t PART" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PART [<channel>] [<reason>], leaves the channel, by default the current one\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t TOPIC" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: TOPIC [<topic>], sets the topic if one is given, else shows the current topic\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t INVITE" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: INVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t KICK" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage:  Usage: KICK <channel> <user>[,user2...] [reason]\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t MODE" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: MODE <channel> [<mode>]\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t PRIVMSG" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: PRIVMSG <target> :<message>\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t OPER" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: OPER <username> <password>, grants operator privileges\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t DIE" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: DIE, instructs the server to shut down\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + "\t KILL" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")) + " : Usage: KILL <nickname> <comment>, disconnects target from the current server\r\n");
+		sendLine(client, colorLine(client, "\t NICK", "RED") + ": Usage: NICK <nickname>, sets your nick\r\n");
+		sendLine(client, colorLine(client, "\t USER", "RED") + ": Usage: USER <username> <hostname> <servername> :<realname>\r\n");
+		sendLine(client, colorLine(client, "\t PASS", "RED") + ": Usage: PASS <password>\r\n");
+		sendLine(client, colorLine(client, "\t QUIT", "RED") + ": Usage: QUIT [<reason>], disconnects from the current server\r\n");
+		sendLine(client, colorLine(client, "\t JOIN", "RED") + ": Usage: JOIN <channel>[,<channel>] joins the channel\r\n");
+		sendLine(client, colorLine(client, "\t PART", "RED") + ": Usage: PART [<channel>] [<reason>], leaves the channel, by default the current one\r\n");
+		sendLine(client, colorLine(client, "\t TOPIC", "RED") + ": Usage: TOPIC [<topic>], sets the topic if one is given, else shows the current topic\r\n");
+		sendLine(client, colorLine(client, "\t INVITE", "RED") + ": Usage: INVITE <nick> [<channel>], invites someone to a channel, by default the current channel (needs chanop)\r\n");
+		sendLine(client, colorLine(client, "\t KICK", "RED") + ": Usage:  Usage: KICK <channel> <user>[,user2...] [reason]\r\n");
+		sendLine(client, colorLine(client, "\t MODE", "RED") + ": Usage: MODE <channel> [<mode>]\r\n");
+		sendLine(client, colorLine(client, "\t PRIVMSG", "RED") + ": Usage: PRIVMSG <target>[,<target>] <text to be sent>, sends private messages between users and channels\r\n");
+		sendLine(client, colorLine(client, "\t OPER", "RED") + ": Usage: OPER <username> <password>, grants operator privileges\r\n");
+		sendLine(client, colorLine(client, "\t DIE", "RED") + ": Usage: DIE, instructs the server to shut down\r\n");
+		sendLine(client, colorLine(client, "\t KILL", "RED") + ": Usage: KILL <nickname> <comment>, disconnects target from the current server\r\n");
+		sendLine(client, colorLine(client, "\t NOTICE", "RED") + ": Usage: NOTICE <target>[,<target>] <text to be sent>, sends notices between users and channels\r\n");
 		sendLine(client, "\r\n");
 		sendLine(client, " Type /WELP <command> for more information, or /WELP -l\r\n");
 		sendLine(client, "\r\n");
@@ -40,7 +41,7 @@ int Server::helpCmd(Client &client, std::vector<std::string> args)
 	else
 	{
 		sendLine(client, "\r\n");
-		sendLine(client, (client.getIsNetCat() ? std::string(RED) : std::string("\00304")) + " Usage\r\n" + (client.getIsNetCat() ? std::string(RESET) : std::string("\017")));
+		sendLine(client, colorLine(client, "Usage", "RED") + "\r\n");
 
 		if (args[0] == "NICK" || args[0] == "nick")
 			sendLine(client, "\t\tNICK <nickname>, sets your nick\r\n");
@@ -63,13 +64,15 @@ int Server::helpCmd(Client &client, std::vector<std::string> args)
 		else if (args[0] == "MODE" || args[0] == "mode")
 			sendLine(client, "\t\tMODE <channel> [<mode>]\r\n");
 		else if (args[0] == "PRIVMSG" || args[0] == "privmsg")
-			sendLine(client, "\t\tPRIVMSG <target> :<message>\r\n");
+			sendLine(client, "\t\tPRIVMSG <target>[,<target>] <text to be sent>, sends private messages between users and channels\r\n");
 		else if (args[0] == "OPER" || args[0] == "oper")
 			sendLine(client, "\t\tOPER <username> <password>, grants operator privileges\r\n");
 		else if (args[0] == "DIE" || args[0] == "die")
 			sendLine(client, "\t\tDIE, instructs the server to shut down\r\n");
 		else if (args[0] == "KILL" || args[0] == "kill")
 			sendLine(client, "\t\tKILL <nickname> <comment>, disconnects target from the current server\r\n");
+		else if (args[0] == "NOTICE" || args[0] == "notice")
+			sendLine(client, "\t\tNOTICE <target>[,<target>] <text to be sent>, sends notices between users and channels\r\n");
 		else
 			return (524); // ERR_HELPNOTFOUND (524)
 	}
