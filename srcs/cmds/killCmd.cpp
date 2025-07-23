@@ -20,8 +20,6 @@ int Server::killCmd(Client &client, std::vector<std::string> args)
 			std::map<std::string, Channel *>::iterator it;
 			for (it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
 				Channel* chan = getChannel(it->first);
-				std::cout << "chan: " << chan->getName() << std::endl;
-				std::cout << "it: " << it->first << std::endl;
 				if (chan) {
 					noticeCmd(client, vectorSplit(chan->getName() + " KILLER " + client.getNick() + " killed " + targetNick + " and gave this reason" + killMessage, ' '));
 					chan->broadcast(killLine, client);

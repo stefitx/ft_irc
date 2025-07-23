@@ -79,6 +79,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 			{
 				createChannel(channel, key, &client);
 				client.addJoinedChannel(getChannel(channel));
+				getChannel(channel)->addOperator(&client);
 
 				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@" + client.getNick() + "\r\n");
@@ -106,7 +107,11 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 					Client* member = it->second;
 					std::string member_nick = member->getNick();
 					if (!names_list.empty())
+					{
 						names_list += " ";
+						if (getChannel(channel)->isChannelOperator(member_nick))
+							names_list += "@";
+					}
 					names_list += member_nick;
 				}
 				if (!getChannel(channel)->getTopic().empty())
@@ -115,7 +120,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 					sendLine(client, ":" + _hostname + " 332 " + client.getNick() + channel + " :" + getChannel(channel)->getTopic() + "\r\n");
 					// SEND RPL_TOPICWHOTIME 333
 				}
-				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@"  + names_list + "\r\n");
+				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :"  + names_list + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
 				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + " :realname", client);
 				client.addJoinedChannel(getChannel(channel));
