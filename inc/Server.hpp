@@ -33,7 +33,7 @@
 // #include "CommandParser.hpp"
 
 
-# define CHANLIMIT 4
+# define CHANLIMITNUM 4
 
 enum CommandType
 {

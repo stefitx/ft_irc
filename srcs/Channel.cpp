@@ -8,15 +8,12 @@ Channel::Channel(std::string name) {
 	_clientNum = 0;
 	_password = "";
 	_userLimit = 0;
-	_chanOperator = NULL;
 	_topic = "";
 	_mode = "";
-	_accessType = "";
-	_invitedMembers.clear();
+	_invitedUsers.clear();
 	_passwordMode = false;
 	_inviteMode = false;
 	_topicRestrictionMode = true;
-	_operPrivilegeMode = false;
 	_userLimitMode = false;
 	//members = std::map<int, Client *>();
 }
@@ -27,10 +24,8 @@ Channel::Channel(const Channel &other) :
 	_clientNum(other._clientNum),
 	_topic(other._topic),
 	_userLimit(other._userLimit),
-	_invitedMembers(other._invitedMembers),
+	_invitedUsers(other._invitedUsers),
 	_mode(other._mode),
-	_chanOperator(other._chanOperator),
-	_accessType(other._accessType),
 	_members(other._members),
 	_operators(other._operators)
 {}
@@ -41,15 +36,13 @@ Channel &Channel::operator=(const Channel &other) {
 	if (this != &other) {
 		_name = other._name;
 		_clientNum = other._clientNum;
-		_chanOperator = other._chanOperator;
 		_userLimit = other._userLimit;
 		_topic = other._topic;
 		_password = other._password;
 		_mode = other._mode;
-		_accessType = other._accessType;
 		_members = other._members;
 		_operators = other._operators;
-		_invitedMembers = other._invitedMembers;
+		_invitedUsers = other._invitedUsers;
 	}
 	return *this;
 }
@@ -111,6 +104,23 @@ Client* Channel::getOperators(std::string name)
 	return (it->second);
 }
 
+bool	Channel::isChannelOperator(std::string memberName)
+{
+	if (getOperators(memberName))
+		return (true);
+	return (false);
+}
+
+bool	Channel::isInvitedUser(Client *user)
+{
+	for (std::vector<Client *>::iterator it = _invitedUsers.begin(); it != _invitedUsers.end(); it++)
+	{
+		if (*it == user)
+			return (true);
+	}
+	return (false);
+}
+
 std::map<std::string, Client *> &Channel::getMapOperators()
 {
 	return _operators;
@@ -131,17 +141,15 @@ void	Channel::setMode(const std::string mode)
 			_topicRestrictionMode = true;
 		if (mode[i] == 'k')
 			_passwordMode = true;
-		if (mode[i] == 'o')
-			_operPrivilegeMode = true;
 		if (mode[i] == 'l')
 			_userLimitMode = true;
 	}
 }
 
-void	Channel::setChanOperator(Client *creator)
+/*void	Channel::setChanOperator(Client *creator)
 {
 	_chanOperator = creator;
-}
+}*/
 
 std::map<std::string, Client *>	&Channel::getMapMembers()
 {
@@ -154,21 +162,19 @@ std::string	Channel::getTopic(){
 
 int	Channel::authorizedToJoin(Client *client, std::string key)
 {
-	(void)client;
 	if (_passwordMode) // (+k)
 	{
 		if (key.empty() || key != _password)
 			return (475); // ERR_BADCHANNELKEY
 	}
-	if (_clientNum + 1 >= _userLimit) // (+l)
-		return (471); // ERR_CHANNELISFULL
+	if (_userLimitMode && _clientNum + 1 >= _userLimit) // (+l)
+		return (471); // ERR_CHANNELISFULL 	//:iridium.libera.chat 471 chaa #holiboli :Cannot join channel (+l) - channel is full, try again later
 
-	if (_inviteMode)  //(+i)
+	if (_inviteMode && !isInvitedUser(client))  //(+i)
 		return (473); // ERR_INVITEONLYCHAN
 	
-	if (_topicRestrictionMode /*&& //cliente no es channel operator*/)
+	if (_topicRestrictionMode && !isChannelOperator(client->getNick())) // (+t)
 		return (482); // no puede cambiar el _topic -> ERR_CHANOPRIVSNEEDED 482 
-	
 	return (0);
 }
 

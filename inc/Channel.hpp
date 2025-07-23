@@ -23,7 +23,6 @@ class	Channel
 		void	removeOperator(Client* client);
 		std::string	getName() const;
 
-		void	setChanOperator(Client *creator);
 		void	setPassword(const std::string key);
 		void	setMode(const std::string mode);
 
@@ -33,27 +32,27 @@ class	Channel
 		std::string	getTopic();
 		Client*		getOperators(std::string name);
 
+		bool		isChannelOperator(std::string memberName);
+		bool		isInvitedUser(Client *userName);
+
 		std::map<std::string, Client *>	&getMapMembers();
 		std::map<std::string, Client *>	&getMapOperators();
 		// void  broadcast(const std::string &msg, Client *exclude);
+
 	private:
 		std::string					_name;
 		std::string					_password;
 		int							_clientNum;
 		std::string					_topic;
 		int							_userLimit;
-		std::vector<std::string>	_invitedMembers;
+		std::vector<Client *>		_invitedUsers;
 
 		std::string					_mode;
 		bool						_passwordMode;
 		bool						_inviteMode;
 		bool						_topicRestrictionMode;
-		bool						_operPrivilegeMode;
 		bool						_userLimitMode;
 
-		Client*						_chanOperator; // the first client to create the channel
-		std::string					_accessType; // muy relacionado con 'mode'
-
-		std::map<std::string, Client *>		_members; // map of clients in the channel
+		std::map<std::string, Client *>		_members;
 		std::map<std::string, Client *>		_operators;
 };
