@@ -53,7 +53,6 @@ void	Channel::broadcast(std::string msg, Client &except)
 		if (it->first != except.getNick()) // Don't send the message back to the sender
 		{
 			sendLine(*(it->second), msg + "\r\n");
-			std::cout << msg << std::endl;
 		}
 	}
 }
@@ -107,7 +106,7 @@ Client* Channel::getOperators(std::string name)
 	it = _operators.find(name);
 	if (it == _operators.end())
 		return (NULL);
-	return (it->second);
+	return (_operators[it->first]);
 }
 
 bool	Channel::isChannelOperator(std::string memberName)
