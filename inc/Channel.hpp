@@ -26,14 +26,16 @@ class	Channel
 		void	setPassword(const std::string key);
 		void	setMode(const std::string mode);
 		void	addIvitedUser(Client *client);
+		void	setTopic(const std::string newTopic);
 
 		int		authorizedToJoin(Client* client, std::string key);
 
 		Client*		getMembers(std::string clientName);
 		std::string	getTopic();
 		Client*		getOperators(std::string name);
-		bool isMember(Client *c) const;
-		bool isOperator(Client *c) const;
+		bool		getTopicRestrictionMode();
+		bool		isMember(Client *c) const;
+		bool 		isOperator(Client *c) const;
 
 		bool		isChannelOperator(std::string memberName);
 		bool		isInvitedUser(Client *userName);

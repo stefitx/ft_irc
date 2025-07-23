@@ -45,6 +45,7 @@ class	Client
 		std::string				&getUser();
 		std::string				&getBuffer();
 		int						&getChannelsJoined();
+		Channel*				isChannelMember(std::string channelName);
 		std::map<std::string, Channel *>	&getChannels();
 		std::string				&getIp();
 		int						&getFd();

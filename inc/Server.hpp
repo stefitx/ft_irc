@@ -110,6 +110,7 @@ class Server
 		int inviteCmd(Client &, std::vector<std::string> args);
 		void noticeCmd(Client &, std::vector<std::string> args);
 
+		int	topicCmd(Client &, std::vector<std::string> args);
 		int dieCmd(Client&);
 
 

@@ -108,6 +108,12 @@ void Client::setConnectionTime(time_t time) { _connectionTime = time; }
 void Client::setIsNetCat(bool state) { _isNetCat = state; }
 void Client::setAddr(struct sockaddr_in addr) { _addr = addr; }
 
+Channel	*Client::isChannelMember(std::string channelName)
+{
+	if (_channels.find(channelName) == _channels.end())
+		return (NULL);
+	return (_channels[channelName]);
+}
 
 void	Client::addJoinedChannel(Channel *joinedChannel)
 {

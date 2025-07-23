@@ -89,7 +89,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		}
 		else // el channel ya exise
 		{
-			if ( client.getChannelsJoined() <= CHANLIMITNUM - 1)
+			if (client.getChannelsJoined() <= CHANLIMITNUM - 1)
 			{
 				int authCode = getChannel(channel)->authorizedToJoin(&client, key);
 				if (authCode == 0)

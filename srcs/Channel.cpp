@@ -8,7 +8,7 @@ Channel::Channel(std::string name) {
 	_clientNum = 0;
 	_password = "";
 	_userLimit = 0;
-	_topic = "";
+	_topic.clear();
 	_mode = "";
 	_invitedUsers.clear();
 	_passwordMode = false;
@@ -135,6 +135,11 @@ void	Channel::setPassword(const std::string key){
 	_password = key;
 }
 
+void	Channel::setTopic(const std::string newTopic)
+{
+	_topic = newTopic;
+}
+
 void	Channel::setMode(const std::string mode)
 {
 	_mode = mode;
@@ -158,6 +163,10 @@ std::map<std::string, Client *>	&Channel::getMapMembers()
 
 std::string	Channel::getTopic(){
 	return _topic;
+}
+
+bool	Channel::getTopicRestrictionMode(){
+	return _topicRestrictionMode;
 }
 
 int	Channel::authorizedToJoin(Client *client, std::string key)

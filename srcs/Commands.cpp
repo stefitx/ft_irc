@@ -32,7 +32,7 @@ void	Server::executeCmd(Client &client, std::string cmd, std::vector<std::string
 		case PASS: code = passCmd(client, args); break;
 		case JOIN: code = joinCmd(client, args); break;
 		case PART: break;//code = partCmd(client, args); break;
-		case TOPIC: break;// code = topic(client, args); break;
+		case TOPIC: code = topicCmd(client, args); break;
 		case INVITE: code = inviteCmd(client, args); break;
 		case KICK: code = kickCmd(client, args); break;
 		case MODE: break;// code =mode(client, args); break;
