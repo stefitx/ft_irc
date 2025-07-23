@@ -106,8 +106,10 @@ class Server
 		int quitCmd(Client&, std::vector<std::string> args);
 		int killCmd(Client&, std::vector<std::string> args);
 		int privmsgCmd(Client&, std::vector<std::string> args);
-		int kickCmd(Client &issuer, std::vector<std::string> args);
-		void noticeCmd(Client &issuer, std::vector<std::string> args);
+		int kickCmd(Client &, std::vector<std::string> args);
+		int inviteCmd(Client &, std::vector<std::string> args);
+		void noticeCmd(Client &, std::vector<std::string> args);
+
 		int dieCmd(Client&);
 
 

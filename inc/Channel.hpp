@@ -25,6 +25,7 @@ class	Channel
 
 		void	setPassword(const std::string key);
 		void	setMode(const std::string mode);
+		void	addIvitedUser(Client *client);
 
 		int		authorizedToJoin(Client* client, std::string key);
 
@@ -36,6 +37,7 @@ class	Channel
 
 		bool		isChannelOperator(std::string memberName);
 		bool		isInvitedUser(Client *userName);
+		bool		isInviteMode();
 
 		std::map<std::string, Client *>	&getMapMembers();
 		std::map<std::string, Client *>	&getMapOperators();

@@ -186,3 +186,13 @@ bool Channel::isOperator(Client *c) const
 		return true;
 	return false;
 }
+
+bool Channel::isInviteMode()
+{
+	return _inviteMode;
+}
+
+void Channel::addIvitedUser(Client *client)
+{
+	_invitedUsers.push_back(client);
+}
