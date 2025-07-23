@@ -21,7 +21,6 @@ void	Server::createChannel(std::string channelName, std::string key, Client *cli
 		newChannel->setPassword(key);
 	newChannel->addMember(client);
 	newChannel->addOperator(client);
-	newChannel->setChanOperator(client);
 	newChannel->setMode("Cnst");
 
 	_channels[channelName] = newChannel;
@@ -44,7 +43,6 @@ std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::strin
 		else
 			channelKey = "";
         (*joins)[channels[i]] = channelKey;
-		//joins[channels[i]].insert(channelKey);
 		std::cout << "channel " << channels[i] << ", key: " << channelKey << std::endl;
 	}
 	return (joins);
@@ -52,11 +50,7 @@ std::map<std::string, std::string>	*Server::parseJoinArgs(std::vector<std::strin
 
 int	Server::joinCmd(Client &client, std::vector<std::string> args)
 {
-	std::cout << "ip : " << client.getIp() << std::endl;
 	std::map<std::string, std::string>	*joins;
-
-	// std::cout << "heyy im in joinn\n";
-
 	if (!client.getRegistryState())
 	{
 		//ERR_NOTREGISTERED (451)
@@ -81,12 +75,8 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		std::string	key = joins_it->second;
 		if (!getChannel(joins_it->first)) // si no encuentras el canal
 		{
-
 			if (channel[0] != '#')
-			{
-				//ERR 403 -> "there is no such channel"
-				return (403);
-			}
+				return (403); //ERR "there is no such channel"
 			else
 			{
 				createChannel(channel, key, &client);
@@ -107,7 +97,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		}
 		else // el channel ya exise
 		{
-			if ( client.getChannelsJoined() <= CHANLIMIT - 1)
+			if ( client.getChannelsJoined() <= CHANLIMITNUM - 1)
 			{
 				// add client to channel
 				getChannel(channel)->addMember(&client);
@@ -118,41 +108,34 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				std::string names_list;
 				for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it)
 				{
-					Client* member = it->second; // pointer to the Client object
+					Client* member = it->second;
 					std::string member_nick = member->getNick();
 					if (!names_list.empty())
 						names_list += " ";
 					names_list += member_nick;
 					// Now you can use member_nick in your reply
-					// Example: sendLine(client, ":" + member_nick + "!" + ... );
 				}
 				if (!getChannel(channel)->getTopic().empty())
 				{
-					// SEND :molybdenum.libera.chat 332 martaa #holiboli :iwantanothertopic (RPL_TOPIC)
-					// SEND 333 (RPL_TOPICWHOTIME)
+					// SEND RPL_TOPIC 332
+					sendLine(client, ":" + _hostname + " 332 " + client.getNick() + channel + " :" + getChannel(channel)->getTopic() + "\r\n");
+
+					// SEND 333 (RPL_TOPICWHOTIME) :copper.libera.chat 333 mmmmar #holiboli martalop!~martalop@195.55.43.195 1753262143
+					//sendLine(client, ":" + _hostname + " 333 " + client.getNick() + channel +  + "\r\n");
 				}
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@"  + names_list + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
 				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + " :realname", client);
 				client.addJoinedChannel(getChannel(channel));
-				// for (std::map<std::string, Client *>::iterator members_it = _channels[channel]->getMapMembers().begin(); members_it != _channels[channel]->getMapMembers().end(); members_it++)
-				// {
-				// 	std::map<std::string, Client *> mapa = _channels[channel]->getMapMembers();
-				// 	std::string member_name = getChannel(channel);
-				// 	sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + _hostname + );
-
-				// }
 			}
 			else
-			{
-				// ERR_TOOMANYCHANNELS (405)
-				return (405);
-			}
+				return (405); // ERR_TOOMANYCHANNELS 
 			int authCode = getChannel(channel)->authorizedToJoin(&client, key);
-			if (authCode == 0) // client is authorized to join -> cumplen con: key, client limit , ban - exception, invite-only - exception
+			std::cout << "auth code = " << authCode << std::endl;
+			if (authCode == 0)
 				_channels[channel]->addMember(&client);
-			// errorReply(authcode);
-
+			else
+				errorReply(client, authCode, channel, args);
 		}
 		joins_it++;
 	}

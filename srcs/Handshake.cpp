@@ -77,23 +77,28 @@ void Server::handshake(Client &c)
 
 void Server::errorReply(Client &cli, int code, std::string str, std::vector<std::string> args)
 {
-	std::string line = ":" + _hostname + " " + itoa3(code) + " " + (cli.getNick().empty() ? "*" : cli.getNick()) + " :" ;
+	std::string line = ":" + _hostname + " " + itoa3(code) + " " + (cli.getNick().empty() ? "*" : cli.getNick());
 	switch (code)
 	{
 		case 000: return; // No error
-		case 401: line += str + ": No such nick/channel"; break;
-		case 403: line += args[0] + ": No such channel"; break;
-		case 411: line += "No recipient given (" + str + ")"; break;
-		case 412: line += "No text to send"; break;
-		case 421: line += "[" + str + "]: Unknown command"; break;
-		case 433: line += args[0] + ": Nickname is already in use"; break;
-		case 451: line += "You have not registered"; break;
-		case 461: line += "[" + str + "]: Not enough parameters"; break;
-		case 462: line += "You may not reregister"; break;
-		case 464: line += "Password incorrect"; break;
-		case 481: line += "Permission Denied- You're not an IRC operator"; break;
-		case 524: line = args[0] + ": No help available on this topic"; break;
-		default: line += "Unknown error";
+		case 401: line += " :" + str + ": No such nick/channel"; break;
+		case 403: line += " :" + args[0] + ": No such channel"; break;
+		case 405: line += str + " :You have joined too many channels"; break;
+		case 411: line += " :No recipient given (" + str + ")"; break;
+		case 412: line += " :No text to send"; break;
+		case 421: line += " :[" + str + "]: Unknown command"; break;
+		case 433: line += " :" + args[0] + ": Nickname is already in use"; break;
+		case 451: line += " :You have not registered"; break;
+		case 461: line += " :[" + str + "]: Not enough parameters"; break;
+		case 462: line += " :You may not reregister"; break;
+		case 464: line += " :Password incorrect"; break;
+		case 471: line += str + " :Cannot join channel (+l) - channel is full, try again later"; break;
+		case 473: line += str + " :Cannot join channel (+i)"; break;
+		case 475: line += str + " :Cannot join channel (+k)"; break;
+		case 481: line += " :Permission Denied- You're not an IRC operator"; break;
+		case 482: line += str + " :You're not channel operator"; break;
+		case 524: line = " :" + args[0] + ": No help available on this topic"; break;
+		default: line += " :Unknown error";
 	}
 	line +=  "\r\n";
 	sendLine(cli, line);
