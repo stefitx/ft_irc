@@ -111,13 +111,13 @@ void Server::errorReply(Client &cli, int code, std::string str, std::vector<std:
 		case 405: line += " " + args[0] + " :You have joined too many channels"; break;
 		case 411: line += " :No recipient given (" + str + ")"; break;
 		case 412: line += " :No text to send"; break;
-		case 421: line += " :[" + str + "] :Unknown command"; break;
+		case 421: line += " " + str + " :Unknown command"; break;
 		case 433: line += " :" + args[0] + ": Nickname is already in use"; break;
 		case 441: line += " " + args[1] + " " + args[0] + " :They aren't on that channel"; break;
 		case 442: line += " " + args[1] + " :You're not on that channel"; break;
 		case 443: line += " " + args[0] + " " + args[1] + " :is already on channel"; break;
 		case 451: line += " :You have not registered"; break;
-		case 461: line += " :[" + str + "] :Not enough parameters"; break;
+		case 461: line += " " + str + " :Not enough parameters"; break;
 		case 462: line += " :You may not reregister"; break;
 		case 464: line += " :Password incorrect"; break;
 		case 471: line += str + " :Cannot join channel (+l) - channel is full, try again later"; break;
