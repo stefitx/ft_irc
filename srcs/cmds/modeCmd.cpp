@@ -89,7 +89,7 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 			case 'k':
 				if (sign == '+')
 				{
-					if (paramId >= args.size()) return (461);
+					if (paramId >= args.size()) return (0);
 					chan->setPassword(args[paramId]);
 					chan->addMode('k');
 					chan->setPasswordMode(true);
@@ -118,6 +118,8 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 				}
 				else
 				{
+					if (chan->getUserLimit() == 0)
+						return (0);
 					chan->setUserLimit(0);
 					chan->removeMode('l');
 					chan->setUserLimitMode(false);
