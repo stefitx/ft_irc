@@ -59,7 +59,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		return 461;
 	if (args.size() == 1 && args[0] == "0")
 	{
-		//partCmd(client, NULL);
+		partCmd(client, args);
 		return (0);
 	}
 	joins = parseJoinArgs(args);

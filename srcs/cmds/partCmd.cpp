@@ -9,7 +9,19 @@ int Server::partCmd(Client &client, std::vector<std::string> args)
 
 	std::vector<std::string> channels = vectorSplit(args[0], ',');
 	std::string reason;
-	if (args.size() > 1)
+	if (args[0] == "0") // prepare to part from all the channels the client is member of
+	{
+		std::map<std::string, Channel *>::iterator clientChannels_it = client.getChannels().begin();
+		channels.clear();
+		std::vector<std::string>::iterator channelsVector_it = channels.begin();
+		for (; clientChannels_it != client.getChannels().end(); clientChannels_it++)
+		{
+			channels.insert(channelsVector_it, clientChannels_it->first);
+			channelsVector_it++;
+		}
+		reason = "";
+	}
+	else if (args.size() > 1)
 	{
 		reason = args[1];
 		for (size_t i = 2; i < args.size(); ++i)
