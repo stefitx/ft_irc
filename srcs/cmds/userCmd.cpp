@@ -5,13 +5,13 @@ int Server::userCmd(Client &client, std::vector<std::string> args)
 {
 	const int maxLen = 12;
 
-	if (client.getHandShake() == true)
-		return 462;
+	if (client.getHandShake() == true || !client.getUser().empty())
+		return (462);
 	if (args.size() < 4)
-		return 461;
+		return (461);
 	std::string user = args[0];
 	if (user.empty())
-		return 461;
+		return (461);
 	if (user.size() > maxLen)
 		user = user.substr(0, maxLen);
 	client.setUser(user);

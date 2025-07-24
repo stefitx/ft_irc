@@ -24,6 +24,14 @@ void Server::disconnectClient(Client &client)
 
 int Server::quitCmd(Client &client, std::vector<std::string> args)
 {
+	std::string message;
+	for (size_t i = 0; i < args.size(); ++i)
+	{
+		if (i > 1)
+			message += " ";
+		message += args[i];
+	}
+	std::cout << "Client " << client.getNick() << " is quitting with message: " << message << "\n";
 	std::map<std::string, Channel *>::iterator it;
 	for (it = client.getChannels().begin(); it != client.getChannels().end(); ++it) {
         Channel* chan = getChannel(it->first);

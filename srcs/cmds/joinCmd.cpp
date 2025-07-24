@@ -146,7 +146,8 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				}
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :"  + names_list + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
-				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + " :realname", client);
+				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel, client);
+				// getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + " :realname", client);
 			}
 			else
 			{

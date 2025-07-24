@@ -18,7 +18,7 @@ NAMES
 ADMIN
 
 
-
+handshake put restrictionsin CHNLEN, USRLEN
 DIE					:✅​
 HELP				:cambiar el help por notice
 INVITE				:✅​
@@ -26,12 +26,12 @@ JOIN				:
 KICK				:✅​
 KILL				:✅​
 MODE				:
-NICK				:
-NOTICE				:
-OPER				:
+NICK				:✅​
+NOTICE				:✅​
+OPER				:✅​
 PART				:✅​
-PASS				:
-PRIVMSG				:
-QUIT				:
+PASS				:✅​
+PRIVMSG				:✅​
+QUIT				:✅​
 TOPIC				:
-USER				:
+USER				:✅​
