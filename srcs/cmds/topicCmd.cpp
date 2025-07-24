@@ -4,13 +4,20 @@ int Server::topicCmd(Client &client, std::vector<std::string> args)
 {
     if (args.empty())
         return (461); // ERR_NEEDMOREPARAMS 
+
+    std::string::size_type found = args[0].find(','); 
+    if (found != std::string::npos)
+        args[0].erase((args[0].begin() + found), args[0].end()); // erase everything after ','
+
     if (!getChannel(args[0]))
         return (403); // ERR_NOSUCHCHANNEL
     if (!client.isChannelMember(args[0]))
         return (442); // ERR_NOTONCHANNEL
+        
     if (args.size() < 2) // there is no 'topic' arg
     {
-        if (getChannel(args[0])->getTopic().size() == 0)
+
+        if (getChannel(args[0])->getTopic().size() == 0) // si _topic estaba vacio
             sendLine(client, ":" + _hostname + " " + itoa3(331) + " " + client.getNick() + " " + args[0] + " :No topic is set\r\n"); // RPL_NOTOPIC 
         else 
             sendLine(client, ":" + _hostname + " " + itoa3(332) + " " + client.getNick() + " " + args[0] + " " + getChannel(args[0])->getTopic() + "\r\n"); // RPL_TOPIC
