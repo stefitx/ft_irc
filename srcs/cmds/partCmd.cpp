@@ -42,8 +42,7 @@ int Server::partCmd(Client &client, std::vector<std::string> args)
 		}
 		if (!chan->isMember(&client))
 		{
-			std::vector<std::string> singleArg(1, chanName);
-			errorReply(client, 442, chanName, singleArg);
+			errorReply(client, 442, chanName, vectorSplit("PART " + chanName, ' '));
 			continue;
 		}
 		std::string partLine = ":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " PART " + chanName;
@@ -52,9 +51,7 @@ int Server::partCmd(Client &client, std::vector<std::string> args)
 
 		chan->broadcast(partLine, client);
 		sendLine(client, partLine + "\r\n");
-
 		chan->removeMember(&client);
-		chan->removeOperator(&client);
 		client.removeJoinedChannel(chan);
 		pruneChannel(chan);
 	}

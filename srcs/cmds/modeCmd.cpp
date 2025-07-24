@@ -108,6 +108,11 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 				if (sign == '+')
 				{
 					if (paramId >= args.size()) return (461);
+					for (size_t j = 0; j < args[paramId].size(); j++)
+					{
+						if (!isdigit(args[paramId][j]))
+							return (0);
+					}
 					int lim = std::atoi(args[paramId].c_str());
 					if (lim <= 0) return (461);
 					chan->setUserLimit(lim);
