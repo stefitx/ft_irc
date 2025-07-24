@@ -15,7 +15,7 @@ int Server::inviteCmd(Client &client, std::vector<std::string> args)
 
 
 	std::map<int, Client *>::iterator it;
-	for (it = _clients.begin(); it != _clients.end(); ++it) 
+	for (it = _clients.begin(); it != _clients.end(); ++it)
 	{
 		if (it->second->getNick() == nick)
 			break;
@@ -29,7 +29,7 @@ int Server::inviteCmd(Client &client, std::vector<std::string> args)
 		return (482); // ERR_CHANOPRIVSNEEDED
 	if (chan->getMembers(nick))
 		return (443); // ERR_USERONCHANNEL
-	
+
 	Client *targetClient;
 	for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
 	{
@@ -38,6 +38,6 @@ int Server::inviteCmd(Client &client, std::vector<std::string> args)
 	}
 	chan->addIvitedUser(targetClient);
 	sendLine(client, ":" + _hostname + " 341 " + client.getNick() + " " + targetClient->getNick() + " " + channel + "\r\n");
-	sendLine(*targetClient, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " INVITE " + targetClient->getNick() + " :" + channel + "\r\n");
+	sendLine(*targetClient, ":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " INVITE " + targetClient->getNick() + " :" + channel + "\r\n");
 	return (0);
 }

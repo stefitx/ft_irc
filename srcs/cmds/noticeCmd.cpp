@@ -39,7 +39,7 @@ void Server::noticeCmd(Client &client, std::vector<std::string> args)
 				// errorReply(client, 401, tgt, args);
 				continue;
 			}
-			channel->broadcast(":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " NOTICE " + tgt + " :" + message, client);
+			channel->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " NOTICE " + tgt + " :" + message, client);
 		}
 		else
 		{

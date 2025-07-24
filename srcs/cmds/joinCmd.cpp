@@ -85,7 +85,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				client.addJoinedChannel(getChannel(channel));
 				getChannel(channel)->addOperator(&client);
 
-				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
+				sendLine(client, ":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@" + client.getNick() + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
 			}
@@ -104,7 +104,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 					++joins_it;
 					continue;
 				}
-				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
+				sendLine(client, ":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
 				std::map<std::string, Client *>& members = _channels[channel]->getMapMembers();
 				std::string names_list;
 				for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it)

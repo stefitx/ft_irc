@@ -16,7 +16,7 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 		if (!target.empty())
 			targets.push_back(target);
 	}
-	
+
 	std::string message;
 	for (size_t i = 1; i < args.size(); ++i)
 	{
@@ -37,7 +37,7 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 				errorReply(client, 401, tgt, args);
 				continue;
 			}
-			channel->broadcast(":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " PRIVMSG " + tgt + " :" + message, client);
+			channel->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " PRIVMSG " + tgt + " :" + message, client);
 		}
 		else
 		{
@@ -46,7 +46,7 @@ int Server::privmsgCmd(Client &client, std::vector<std::string> args)
 			{
 				if (it->second->getNick() == tgt)
 				{
-					sendLine(*it->second, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " PRIVMSG " + tgt + " :" + message + "\r\n");
+					sendLine(*it->second, ":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " PRIVMSG " + tgt + " :" + message + "\r\n");
 					found = true;
 					break;
 				}
