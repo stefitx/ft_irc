@@ -23,10 +23,15 @@ class	Channel
 		void	removeOperator(Client* client);
 		std::string	getName() const;
 
-		void	setPassword(const std::string key);
 		void	setMode(const std::string mode);
+		void	setPasswordMode(bool status);
+		void	setInviteMode(bool status);
+		void	setTopicRestrictionMode(bool status);
+		void	setUserLimitMode(bool status);
+		
 		void	addIvitedUser(Client *client);
 		void	setTopic(const std::string newTopic);
+		void	setPassword(const std::string key);
 
 		int		authorizedToJoin(Client* client, std::string key);
 

@@ -20,3 +20,5 @@ LIST
 NAMES
 ADMIN
 
+
+! if a channel has been created at some point during the program and the client leaves (being the only operator) and then joins back, when he joins back, he doesn't become operator again. this is correct! ✅

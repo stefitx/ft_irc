@@ -140,6 +140,26 @@ void	Channel::setTopic(const std::string newTopic)
 	_topic = newTopic;
 }
 
+void	Channel::setPasswordMode(bool status)
+{
+	_passwordMode = status;
+}
+
+void	Channel::setTopicRestrictionMode(bool status)
+{
+	_topicRestrictionMode = status;
+}
+
+void	Channel::setInviteMode(bool status)
+{
+	_inviteMode = status;
+}
+
+void	Channel::setUserLimitMode(bool status)
+{
+	_userLimitMode = status;
+}
+
 void	Channel::setMode(const std::string mode)
 {
 	_mode = mode;
@@ -178,6 +198,7 @@ int	Channel::authorizedToJoin(Client *client, std::string key)
 	}
 	if (_userLimitMode && _clientNum + 1 >= _userLimit) // (+l)
 		return (471); // ERR_CHANNELISFULL
+
 	if (_inviteMode && !isInvitedUser(client))  //(+i)
 		return (473); // ERR_INVITEONLYCHAN
 	return (0);

@@ -13,13 +13,23 @@ int Server::inviteCmd(Client &client, std::vector<std::string> args)
 
 	Channel *chan = getChannel(channel);
 
+
+	std::map<int, Client *>::iterator it;
+	for (it = _clients.begin(); it != _clients.end(); ++it) 
+	{
+		if (it->second->getNick() == nick)
+			break;
+	}
+	if (it == _clients.end())
+		return (errorReply(client, 401, args[0], args),0);
+
 	if (!chan->isMember(&client))
 		return (442); // ERR_NOTONCHANNEL
 	if (chan->isInviteMode() && !chan->isOperator(&client))
 		return (482); // ERR_CHANOPRIVSNEEDED
 	if (chan->getMembers(nick))
 		return (443); // ERR_USERONCHANNEL
-
+	
 	Client *targetClient;
 	for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
 	{

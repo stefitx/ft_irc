@@ -122,7 +122,7 @@ void Server::errorReply(Client &cli, int code, std::string str, std::vector<std:
 		case 473: line += str + " :Cannot join channel (+i)"; break;
 		case 475: line += str + " :Cannot join channel (+k)"; break;
 		case 481: line += " :Permission Denied- You're not an IRC operator"; break;
-		case 482: line += str + " :You're not channel operator"; break;
+		case 482: line += " " + args[0] + " :You're not channel operator"; break;
 		case 524: line = " :" + args[0] + ": No help available on this topic"; break;
 		case 441: line += args[1] + " " + args[0] + " :They aren't on that channel"; break;
 		case 472: line += args[0] + " :is an unknown mode"; break;

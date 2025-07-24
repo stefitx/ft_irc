@@ -79,7 +79,6 @@ class Server
 		void	handleClientData(size_t pollIndex);
 		void	removeClient(size_t pollIndex);
 
-		// Client *lookupClientByFd(int fd);
 		void		processBuffer(Client *c);
 		Channel		*getChannel(const std::string &name);
 

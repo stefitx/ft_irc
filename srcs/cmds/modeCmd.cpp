@@ -61,11 +61,29 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 		switch (m)
 		{
 			case 'i':
-				(sign == '+') ? chan->addMode('i') : chan->removeMode('i');
+				if (sign == '+')
+				{
+					chan->addMode('i');
+					chan->setInviteMode(true);
+				}
+				else
+				{
+					chan->removeMode('i');
+					chan->setInviteMode(false);
+				}
 				didSomething = true;
 				break;
 			case 't':
-				(sign == '+') ? chan->addMode('t') : chan->removeMode('t');
+				if (sign == '+')
+				{
+					chan->addMode('t');
+					chan->setTopicRestrictionMode(true);
+				}
+				else
+				{
+					chan->removeMode('t');
+					chan->setTopicRestrictionMode(false);
+				}
 				didSomething = true;
 				break;
 			case 'k':
@@ -74,6 +92,7 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 					if (paramId >= args.size()) return (461);
 					chan->setPassword(args[paramId]);
 					chan->addMode('k');
+					chan->setPasswordMode(true);
 					appliedParams.push_back(args[paramId]);
 					paramId++;
 				}
@@ -81,6 +100,7 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 				{
 					chan->setPassword("");
 					chan->removeMode('k');
+					chan->setPasswordMode(false);
 				}
 				didSomething = true;
 				break;
@@ -92,6 +112,7 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 					if (lim <= 0) return (461);
 					chan->setUserLimit(lim);
 					chan->addMode('l');
+					chan->setUserLimitMode(true);
 					appliedParams.push_back(args[paramId]);
 					paramId++;
 				}
@@ -99,6 +120,7 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 				{
 					chan->setUserLimit(0);
 					chan->removeMode('l');
+					chan->setUserLimitMode(false);
 				}
 				didSomething = true;
 				break;
