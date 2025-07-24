@@ -12,9 +12,8 @@ int Server::killCmd(Client &client, std::vector<std::string> args)
 		if (it->second->getNick() == targetNick)
 		{
 			Client *targetClient = it->second;
-			if (targetClient->getFd() == client.getFd())
-				return (442); // ERR_NOTONCHANNEL
 			std::string message;
+
 			for (size_t i = 1; i < args.size(); ++i)
 			{
 				if (i > 1)
@@ -23,6 +22,7 @@ int Server::killCmd(Client &client, std::vector<std::string> args)
 			}
 			if (!message.empty() && message[0] == ':')
 				message.erase(0, 1);
+
 			std::string killLine = ":" + targetClient->getNick() + "!~" + targetClient->getUser() + "@" + targetClient->getIp() + " KILL " + targetNick  + " :" + message;
 			std::string quitMsg = ":" + targetClient->getNick() + "!~" + targetClient->getUser() + "@" + targetClient->getIp() + " QUIT :Killed by " + client.getNick() + " (" + message + ")";
 			sendLine(*targetClient, killLine + "\r\n");
@@ -39,5 +39,5 @@ int Server::killCmd(Client &client, std::vector<std::string> args)
 			return (0);
 		}
 	}
-	return (401); // ERR_NOSUCHNICK
+	return (errorReply(client, 401, targetNick, args), 0); // ERR_NOSUCHNICK
 }
