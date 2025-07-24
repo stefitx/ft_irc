@@ -12,7 +12,7 @@
 
 NAME		:= ircserv
 CXX			:= c++
-CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -MMD -MP
+CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -MMD -MP #-fsanitize=address
 OBJ_DIR		:= obj/
 SRC_DIR		:= srcs/
 INC_DIR		:= inc
