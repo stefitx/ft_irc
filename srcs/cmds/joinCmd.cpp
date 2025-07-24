@@ -86,7 +86,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 			}
 			else
 			{
-				createChannel(channel, key, &client);
+				createChannel(channel, "", &client);
 				client.addJoinedChannel(getChannel(channel));
 				getChannel(channel)->addOperator(&client);
 
@@ -141,9 +141,8 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				}
 				if (!getChannel(channel)->getTopic().empty())
 				{
-					// SEND RPL_TOPIC 332
-					sendLine(client, ":" + _hostname + " 332 " + client.getNick() + channel + " :" + getChannel(channel)->getTopic() + "\r\n");
-					// SEND RPL_TOPICWHOTIME 333
+					sendLine(client, ":" + _hostname + " 332 " + client.getNick() + " " + channel + " :" + getChannel(channel)->getTopic() + "\r\n"); // RPL_TOPIC 332
+					sendLine(client, ":" + _hostname + " 333 " + client.getNick() + " " + channel + " " + getChannel(channel)->getTopicSetterMember()->getNick() + "!~" + getChannel(channel)->getTopicSetterMember()->getUser() + "@" + getChannel(channel)->getTopicSetterMember()->getIp() + " " + getChannel(channel)->getTopicSetTime() + "\r\n"); // RPL_TOPICWHOTIME 333
 				}
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :"  + names_list + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
