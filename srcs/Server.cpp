@@ -103,42 +103,46 @@ void Server::acceptNewClient()
 		_clients[fd]->getAddr().sin_port = htons(_port); // Port is not set here, it will be set later
 		_pollFds.push_back(pfd);
 		_clients[fd]->setConnectionTime(time(NULL));
-		std::cout << "[+] Client connected fd=" << fd << "\n";
 }
 }
 
-void Server::handleClientData(size_t idx)
+void Server::handleClientData(std::size_t idx)
 {
-	int    fd = _pollFds[idx].fd;
-	Client *c  = _clients[fd];
-	char   buf[1024];
+    int     fd = _pollFds[idx].fd;
+    Client *c  = _clients[fd];
+    char    buf[1024];
+    ssize_t n = recv(fd, buf, sizeof(buf), MSG_DONTWAIT);
 
-	ssize_t bytes = recv(fd, buf, sizeof(buf), MSG_DONTWAIT);
-	if (bytes == -1)
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return;
-		perror("recv");
-		removeClient(idx);
-		return;
-	}
-	if (bytes == 0)
-	{
-		std::cout << "[i] Client closed fd=" << fd << '\n';
-		removeClient(idx);
-		return;
-	}
-	else if (bytes > 1024)
-	{
-		std::cerr << "[!] Warning: Received more than 1024 bytes, weird things might happen ((>.<)).\n";
-	}
-
-	/* ► Aggregate partial packets ◄ */
-	c->getBuffer().append(buf, static_cast<size_t>(bytes));
-
-	/* Process as soon as we have at least one full IRC line (ends “\r\n”). */
-	if (c->getBuffer().find("\r\n") != std::string::npos)
-		processBuffer(c);    // consumes complete lines, keeps any tail
+    if (n > 0)
+    {
+        c->getBuffer().append(buf, static_cast<std::size_t>(n));
+        processBuffer(c);
+        return;
+    }
+    if (n == 0)
+    {
+        if (!c->getBuffer().empty())
+        {
+            c->getBuffer().append("\r\n");
+            processBuffer(c);
+        }
+        removeClient(idx);
+        return;
+    }
+    if (errno == EAGAIN || errno == EWOULDBLOCK)
+        return;
+    if (errno == ECONNRESET)
+    {
+        if (!c->getBuffer().empty())
+        {
+            c->getBuffer().append("\r\n");
+            processBuffer(c);
+	     }
+        removeClient(idx);
+        return;
+    }
+    perror("recv");
+    removeClient(idx);
 }
 
 
@@ -186,7 +190,9 @@ void Server::processBuffer(Client *c)
 			args.push_back(token);
 		}
 		if (!args.empty())
+		{
 			executeCmd(*c, args[0], args);
+		}
 	}
 }
 
@@ -238,4 +244,14 @@ void Server::run()
 void Server::stop()
 {
         _running = false;
+}
+
+void Server::pruneChannel(Channel* chan)
+{
+    if (chan && chan->getMapMembers().empty())
+    {
+        const std::string name = chan->getName();
+        _channels.erase(name);
+        delete chan;
+    }
 }

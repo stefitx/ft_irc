@@ -4,3 +4,5 @@ obj/
 *.d
 *.a
 ircserv
+all.txt
+*.sh

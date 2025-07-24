@@ -2,14 +2,14 @@ NICK:	- Decidir si comprobar nicks de gente que no han hecho el handshake ✅​
 USER: ✅​
 HELP ✅​
 JOIN
-└ TOPIC
-└ INVITE
-└ PART (snipet of quit) .
-└ MODE :
+└ TOPIC ✅​
+└ INVITE ✅​
+└ PART (snipet of quit) ✅
+└ MODE : ✅​
  	/*if (_topicRestrictionMode && !isOperator(client)) // (+t)
 		return (482); // no puede cambiar el _topic -> ERR_CHANOPRIVSNEEDED 482*/
 
-└ KICK (same as part [u need to be operator]) .
+└ KICK (same as part [u need to be operator]) ✅​
 PRIVMSG ✅​
 KILL : Forcibly removes <client> from the network. ✅​
 QUIT : Disconnects the user from the server. ✅​
@@ -19,5 +19,4 @@ OPER : ✅​
 LIST
 NAMES
 ADMIN
-
 

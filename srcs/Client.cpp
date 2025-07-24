@@ -84,6 +84,8 @@ int &Client::getChannelsJoined() { return _channelsJoined; }
 time_t Client::getConnectionTime() const { return _connectionTime; }
 bool Client::getIsNetCat() const { return _isNetCat; }
 struct sockaddr_in &Client::getAddr(void) { return (_addr); }
+std::string &Client::inBuf()            { return _inBuf; }
+const std::string &Client::inBuf() const{ return _inBuf; }
 
 void Client::setNick(std::string nick) { _nickName = nick; }
 void Client::setUser(std::string user) { _userName = user; }

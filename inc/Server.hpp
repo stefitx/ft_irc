@@ -84,6 +84,7 @@ class Server
 		Channel		*getChannel(const std::string &name);
 
 		void		createChannel(std::string channelName, std::string key, Client *client);
+		void pruneChannel(Channel* chan);
 		bool		reply(Client &cli, int code, const std::string &params, const std::string &text);
 		void		executeCmd(Client &, std::string cmd, std::vector<std::string> args);
 		void		handshake(Client &client);
@@ -109,10 +110,12 @@ class Server
 		int kickCmd(Client &, std::vector<std::string> args);
 		int inviteCmd(Client &, std::vector<std::string> args);
 		void noticeCmd(Client &, std::vector<std::string> args);
+		int partCmd(Client &client, std::vector<std::string> args);
 
 		int	topicCmd(Client &, std::vector<std::string> args);
 		int dieCmd(Client&);
-
+		int modeCmd(Client&, std::vector<std::string> args);
+		int modeInitialChecks(Client &client, std::vector<std::string> args, const std::string &chanName, Channel *chan);
 
 	public:
 		Server(unsigned short port, const std::string &password);

@@ -57,6 +57,8 @@ class	Client
 		bool					getIsNetCat() const;
 		void					addJoinedChannel(Channel *joinedChannel);
 		void					removeJoinedChannel(Channel *joinedChannel);
+		std::string &inBuf();
+    	const std::string &inBuf() const;
 
 	private:
 		std::string						_nickName;
@@ -73,5 +75,6 @@ class	Client
 		int								_channelsJoined;
 		struct sockaddr_in				_addr;
 		std::map<std::string, Channel *>	_channels;
+		std::string _inBuf; 
 };
 

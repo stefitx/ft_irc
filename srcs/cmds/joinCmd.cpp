@@ -97,6 +97,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				else
 				{
 					errorReply(client, authCode, channel, args);
+					++joins_it;
 					continue;
 				}
 				sendLine(client, ":" + client.getNick() + "!" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");

@@ -58,6 +58,7 @@ int Server::kickCmd(Client &issuer, std::vector<std::string> args)
         chan->removeMember(victim);
         chan->removeOperator(victim);
         victim->removeJoinedChannel(chan);
+		pruneChannel(chan);
     }
 
     return 0;

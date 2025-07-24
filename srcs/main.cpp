@@ -20,7 +20,10 @@ static Server *g_server = NULL;
 static void handleSignal(int)
 {
     if (g_server)
+	{
+		std::cout << "\nShutting down server...\n";
         g_server->stop();
+	}
 }
 
 static unsigned short parsePort(const char *arg)
@@ -62,6 +65,8 @@ int main(int argc, char **argv)
     sa.sa_flags = 0;
     sigaction(SIGINT, &sa, NULL);
     sigaction(SIGTERM, &sa, NULL);
+	sigaction(SIGQUIT, &sa, NULL);
     srv.run();
+	std::cout << "Server stopped gracefully.\n";
     return (0);
 }

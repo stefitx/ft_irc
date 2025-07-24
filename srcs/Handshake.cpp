@@ -125,6 +125,8 @@ void Server::errorReply(Client &cli, int code, std::string str, std::vector<std:
 		case 482: line += str + " :You're not channel operator"; break;
 		case 524: line = " :" + args[0] + ": No help available on this topic"; break;
 		case 441: line += args[1] + " " + args[0] + " :They aren't on that channel"; break;
+		case 472: line += args[0] + " :is an unknown mode"; break;
+		case 502: line += " :Cannot change mode for that channel"; break;
 		default: line += " :Unknown error";
 	}
 	line +=  "\r\n";

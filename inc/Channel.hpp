@@ -43,7 +43,15 @@ class	Channel
 
 		std::map<std::string, Client *>	&getMapMembers();
 		std::map<std::string, Client *>	&getMapOperators();
-		// void  broadcast(const std::string &msg, Client *exclude);
+		const std::string	&getMode()          const { return (_mode);     }
+
+		bool	hasMode(char c)	const;
+		void	addMode(char c);
+		void	removeMode(char c);
+		int		getUserLimit()	const;
+		void	setUserLimit(int n);
+		const std::string	&getPassword() const;
+
 
 	private:
 		std::string					_name;

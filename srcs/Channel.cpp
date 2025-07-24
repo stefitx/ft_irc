@@ -204,3 +204,10 @@ void Channel::addIvitedUser(Client *client)
 {
 	_invitedUsers.push_back(client);
 }
+
+bool	Channel::hasMode(char c)                const { return (_mode.find(c) != std::string::npos); }
+void	Channel::addMode(char c)                     { if (!hasMode(c)) _mode += c;                  }
+void	Channel::removeMode(char c)                  { size_t p = _mode.find(c); if (p != std::string::npos) _mode.erase(p, 1); }
+int		Channel::getUserLimit()                const { return (_userLimit); }
+void	Channel::setUserLimit(int n)                 { _userLimit = n;       }
+const std::string	&Channel::getPassword() const { return (_password); }
