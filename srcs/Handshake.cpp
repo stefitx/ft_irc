@@ -108,7 +108,7 @@ void Server::errorReply(Client &cli, int code, std::string str, std::vector<std:
 		case 000: return; // No error
 		case 401: line += " :" + str + ": No such nick/channel"; break;
 		case 403: line += " :" + args[0] + ": No such channel"; break;
-		case 405: line += str + " :You have joined too many channels"; break;
+		case 405: line += " " + args[0] + " :You have joined too many channels"; break;
 		case 411: line += " :No recipient given (" + str + ")"; break;
 		case 412: line += " :No text to send"; break;
 		case 421: line += " :[" + str + "]: Unknown command"; break;

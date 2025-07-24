@@ -7,8 +7,6 @@ void Server::noticeCmd(Client &client, std::vector<std::string> args)
 	else if (args.size() < 2)
 		return ; // ERR_NOTEXTTOSEND (412)
 
-
-
 	std::vector<std::string> targets;
 	std::stringstream ss(args[0]);
 	std::string target;
@@ -35,10 +33,7 @@ void Server::noticeCmd(Client &client, std::vector<std::string> args)
 		{
 			Channel *channel = getChannel(tgt);
 			if (!channel)
-			{
-				// errorReply(client, 401, tgt, args);
 				continue;
-			}
 			channel->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " NOTICE " + tgt + " :" + message, client);
 		}
 		else
@@ -48,15 +43,12 @@ void Server::noticeCmd(Client &client, std::vector<std::string> args)
 			{
 				if (it->second->getNick() == tgt)
 				{
-					// 									:crmanzan__!crmanzan@127.0.0.1 NOTICE crmanzan_ :hola
-					// @time=2025-07-23T15:10:15.106Z 	:crmanzan__!~crmanzan@195.55.43.195 NOTICE cristy :jeje
 					sendLine(*it->second, ":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " NOTICE " + tgt + " :" + message + "\r\n");
 					found = true;
 					break;
 				}
 			}
 			if (!found)
-				// errorReply(client, 401, tgt, args);
 				continue; // ERR_NOSUCHNICK (401)
 		}
 	}

@@ -65,7 +65,8 @@ void Channel::addMember(Client* client)
 
 void Channel::addOperator(Client* client)
 {
-	_operators.insert(std::pair<std::string, Client*>(client->getNick(), client));
+	//_operators.insert(std::pair<std::string, Client*>(client->getNick(), client));
+	_operators[client->getNick()] = client;
 }
 
 void Channel::removeMember(Client* client)

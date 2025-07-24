@@ -6,9 +6,6 @@ JOIN
 └ INVITE ✅​
 └ PART (snipet of quit) ✅
 └ MODE : ✅​
- 	/*if (_topicRestrictionMode && !isOperator(client)) // (+t)
-		return (482); // no puede cambiar el _topic -> ERR_CHANOPRIVSNEEDED 482*/
-
 └ KICK (same as part [u need to be operator]) ✅​
 PRIVMSG ✅​
 KILL : Forcibly removes <client> from the network. ✅​

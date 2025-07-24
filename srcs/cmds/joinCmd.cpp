@@ -79,6 +79,11 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				++joins_it;
 				continue;
 			}
+			else if (client.getChannelsJoined() >= CHANLIMITNUM)
+			{
+				delete joins;
+				return (405); // ERR_TOOMANYCHANNELS (405)
+			}
 			else
 			{
 				createChannel(channel, key, &client);
@@ -93,7 +98,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		}
 		else // el channel ya exise
 		{
-			if (client.getChannelsJoined() <= CHANLIMITNUM - 1)
+			if (client.getChannelsJoined() <= CHANLIMITNUM)
 			{
 				int authCode = getChannel(channel)->authorizedToJoin(&client, key);
 				if (authCode == 0)
@@ -105,19 +110,34 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 					continue;
 				}
 				sendLine(client, ":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
+				if (client.isChannelMember(getChannel(channel)->getName()))
+				{
+					++joins_it;
+					continue;
+				}
+				client.addJoinedChannel(getChannel(channel));
 				std::map<std::string, Client *>& members = _channels[channel]->getMapMembers();
 				std::string names_list;
-				for (std::map<std::string, Client *>::iterator it = members.begin(); it != members.end(); ++it)
+				std::map<std::string, Client *>::iterator	it;
+				for (it = members.begin(); it != members.end(); ++it) // adding operators
 				{
-					Client* member = it->second;
-					std::string member_nick = member->getNick();
-					if (!names_list.empty())
+					Client *member = it->second;
+					if (getChannel(channel)->isChannelOperator(member->getNick()))
 					{
-						names_list += " ";
-						if (getChannel(channel)->isChannelOperator(member_nick))
-							names_list += "@";
+						if (!names_list.empty())
+							names_list += " ";
+						names_list += "@" + member->getNick();
 					}
-					names_list += member_nick;
+				}
+				for (it = members.begin(); it != members.end(); ++it) // adding non-operators
+				{
+					Client *member = it->second;
+					if (!getChannel(channel)->isChannelOperator(member->getNick()))
+					{
+						if (!names_list.empty())
+							names_list += " ";
+						names_list += member->getNick();
+					}
 				}
 				if (!getChannel(channel)->getTopic().empty())
 				{
@@ -128,7 +148,6 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :"  + names_list + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
 				getChannel(channel)->broadcast(":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + " :realname", client);
-				client.addJoinedChannel(getChannel(channel));
 			}
 			else
 			{
