@@ -29,7 +29,7 @@ MODE				:
 NICK				:
 NOTICE				:
 OPER				:
-PART				:
+PART				:✅​
 PASS				:
 PRIVMSG				:
 QUIT				:
