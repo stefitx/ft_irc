@@ -74,7 +74,11 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		if (!getChannel(joins_it->first)) // si no encuentras el canal
 		{
 			if (channel[0] != '#')
-				return (delete joins, 403); //ERR "there is no such channel"
+			{
+				sendLine(client, ":" + _hostname + " " + itoa3(403) + " " + (client.getNick().empty() ? "*" : client.getNick()) + " " + channel + " :No such channel\r\n"); //ERR 403
+				++joins_it;
+				continue;
+			}
 			else
 			{
 				createChannel(channel, key, &client);
