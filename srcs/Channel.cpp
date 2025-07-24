@@ -15,6 +15,8 @@ Channel::Channel(std::string name) {
 	_inviteMode = false;
 	_topicRestrictionMode = true;
 	_userLimitMode = false;
+	_topicSetterMember = NULL;
+	_topicSetTime.clear();
 }
 
 Channel::Channel(const Channel &other) :
@@ -25,6 +27,8 @@ Channel::Channel(const Channel &other) :
 	_userLimit(other._userLimit),
 	_invitedUsers(other._invitedUsers),
 	_mode(other._mode),
+	_topicSetterMember(other._topicSetterMember),
+	_topicSetTime(other._topicSetTime),
 	_members(other._members),
 	_operators(other._operators)
 {}
@@ -42,6 +46,8 @@ Channel &Channel::operator=(const Channel &other) {
 		_members = other._members;
 		_operators = other._operators;
 		_invitedUsers = other._invitedUsers;
+		_topicSetterMember = other._topicSetterMember;
+		_topicSetTime = other._topicSetTime;
 	}
 	return *this;
 }
@@ -127,9 +133,17 @@ bool	Channel::isInvitedUser(Client *user)
 	return (false);
 }
 
-std::map<std::string, Client *> &Channel::getMapOperators()
-{
+std::map<std::string, Client *> &Channel::getMapOperators(){
 	return _operators;
+}
+
+Client *Channel::getTopicSetterMember(){
+	return (_topicSetterMember);
+}
+
+void	Channel::setTopicSetterMember(Client *member)
+{
+	_topicSetterMember = member;
 }
 
 void	Channel::setPassword(const std::string key){
@@ -175,6 +189,16 @@ void	Channel::setMode(const std::string mode)
 		if (mode[i] == 'l')
 			_userLimitMode = true;
 	}
+}
+
+void	Channel::setTopicSetTime(std::string time)
+{
+	_topicSetTime = time;
+}
+
+std::string	Channel::getTopicSetTime()
+{
+	return _topicSetTime;
 }
 
 std::map<std::string, Client *>	&Channel::getMapMembers()

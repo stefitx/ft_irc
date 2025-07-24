@@ -8,11 +8,6 @@ int Server::inviteCmd(Client &client, std::vector<std::string> args)
 	std::string nick = args[0];
 	std::string channel = args[1];
 
-	if (!getChannel(channel) || channel[0] != '#')
-		return (403); // ERR_NOSUCHCHANNEL
-
-	Channel *chan = getChannel(channel);
-
 
 	std::map<int, Client *>::iterator it;
 	for (it = _clients.begin(); it != _clients.end(); ++it)
@@ -22,11 +17,18 @@ int Server::inviteCmd(Client &client, std::vector<std::string> args)
 	}
 	if (it == _clients.end())
 		return (errorReply(client, 401, args[0], args),0);
+	if (!getChannel(channel) || channel[0] != '#')
+		return (errorReply(client, 403, "INVITE", vectorSplit(channel + " " + nick, ' ')), 0); // ERR_NOSUCHCHANNEL
+
+	Channel *chan = getChannel(channel);
+
+
+
 
 	if (!chan->isMember(&client))
 		return (442); // ERR_NOTONCHANNEL
 	if (chan->isInviteMode() && !chan->isOperator(&client))
-		return (482); // ERR_CHANOPRIVSNEEDED
+		return (errorReply(client, 482, "INVITE", vectorSplit(channel + " " + nick, ' ')), 0); // ERR_CHANOPRIVSNEEDED
 	if (chan->getMembers(nick))
 		return (443); // ERR_USERONCHANNEL
 

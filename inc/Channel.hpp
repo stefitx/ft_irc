@@ -32,6 +32,8 @@ class	Channel
 		void	addIvitedUser(Client *client);
 		void	setTopic(const std::string newTopic);
 		void	setPassword(const std::string key);
+		void	setTopicSetterMember(Client *memeber);
+		void	setTopicSetTime(std::string time);
 
 		int		authorizedToJoin(Client* client, std::string key);
 
@@ -39,6 +41,8 @@ class	Channel
 		std::string	getTopic();
 		Client*		getOperators(std::string name);
 		bool		getTopicRestrictionMode();
+		Client*		getTopicSetterMember();
+		std::string	getTopicSetTime();
 		bool		isMember(Client *c) const;
 		bool 		isOperator(Client *c) const;
 
@@ -71,6 +75,8 @@ class	Channel
 		bool						_inviteMode;
 		bool						_topicRestrictionMode;
 		bool						_userLimitMode;
+		Client*						_topicSetterMember;
+		std::string					_topicSetTime;
 
 		std::map<std::string, Client *>		_members;
 		std::map<std::string, Client *>		_operators;
