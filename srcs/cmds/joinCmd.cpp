@@ -20,13 +20,13 @@ void	Server::createChannel(std::string channelName, Client *client)
 	newChannel->addMember(client);
 	newChannel->addOperator(client);
 	newChannel->setMode("Cnst");
-	
+
 	time_t now = time(NULL);
 	std::ostringstream oss;
 	oss << now;
 	std::string now_str = oss.str();
 	newChannel->setCreationTime(now_str);
-	
+
 	_channels[channelName] = newChannel;
 }
 
@@ -60,7 +60,12 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		return 461;
 	if (args.size() == 1 && args[0] == "0")
 	{
-		partCmd(client, args);
+		std::map<std::string, Channel *>  channels = client.getChannels();
+		std::map<std::string, Channel *>::iterator channels_it = channels.begin();
+		for (; channels_it != channels.end(); channels_it++)
+		{
+			 	partCmd(client, vectorSplit(channels_it->first, ' '));
+		}
 		return (0);
 	}
 	joins = parseJoinArgs(args);
