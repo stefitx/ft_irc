@@ -122,8 +122,8 @@ void Server::errorReply(Client &cli, int code, std::string str, std::vector<std:
 		case 464: line += " :Password incorrect"; break;
 		case 471: line += " " + str + " :Cannot join channel (+l) - channel is full, try again later"; break;
 		case 472: line += " " + args[0] + " :is an unknown mode"; break;
-		case 473: line += str + " :Cannot join channel (+i)"; break;
-		case 475: line += str + " :Cannot join channel (+k)"; break;
+		case 473: line += " " + str + " :Cannot join channel (+i)"; break;
+		case 475: line += " " + str + " :Cannot join channel (+k)"; break;
 		case 481: line += " :Permission Denied- You're not an IRC operator"; break;
 		case 482: line += " " + args[0] + " :You're not channel operator"; break;
 		case 502: line += " :Cannot change mode for that channel"; break;

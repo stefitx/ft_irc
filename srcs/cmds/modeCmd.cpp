@@ -17,6 +17,8 @@ int Server::modeInitialChecks(Client &client, std::vector<std::string> args, con
 		if (chan->hasMode('l'))
 			line += " " + intToStr(chan->getUserLimit());
 		sendLine(client, line + "\r\n");
+		// SENDLINE @time=2025-07-25T08:33:30.247Z :silver.libera.chat 329 martalop #martatest1 1753432351
+		sendLine(client, ":" + _hostname + " 329 " + client.getNick() + " " + chanName + " " + chan->getCreationTime() + "\r\n");
 		return (0);
 	}
 	if (!chan->isOperator(&client))
@@ -29,6 +31,7 @@ int Server::modeInitialChecks(Client &client, std::vector<std::string> args, con
 	}
 	return (0);
 }
+
 
 int	Server::modeCmd(Client &client, std::vector<std::string> args)
 {	
@@ -137,6 +140,13 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 				Client *victim = chan->getMembers(victimNick);
 				if (!victim)
 				{
+					// << MODE #martatest1 +o martalopppp
+						// tenemos:
+					// >> :cbr3s1.42barcelona.com 441 martalop #hi MODE :They aren't on that channel
+						// deberiamos tener:
+					// >> @time=2025-07-25T08:53:14.141Z :silver.libera.chat 441 martalop martalopppp #martatest1 :They aren't on that channel
+					
+					// 'martalop' (quien llama a mode), 'martalopppp'(persona que ya no esta en el canal)
 					errorReply(client, 441, chanName, vectorSplit("MODE " + chanName + " " + victimNick, ' '));
 					break;
 				}

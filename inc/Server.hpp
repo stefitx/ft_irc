@@ -82,7 +82,7 @@ class Server
 		void		processBuffer(Client *c);
 		Channel		*getChannel(const std::string &name);
 
-		void		createChannel(std::string channelName, std::string key, Client *client);
+		void		createChannel(std::string channelName, Client *client);
 		void pruneChannel(Channel* chan);
 		bool		reply(Client &cli, int code, const std::string &params, const std::string &text);
 		void		executeCmd(Client &, std::string cmd, std::vector<std::string> args);

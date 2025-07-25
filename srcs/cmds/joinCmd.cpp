@@ -13,16 +13,20 @@ std::vector<std::string> Server::vectorSplit(const std::string& str, char delim)
     return (tokens);
 }
 
-void	Server::createChannel(std::string channelName, std::string key, Client *client)
+void	Server::createChannel(std::string channelName, Client *client)
 {
 	Channel *newChannel = new Channel(channelName);
 
-	if (!key.empty())
-		newChannel->setPassword(key);
 	newChannel->addMember(client);
 	newChannel->addOperator(client);
 	newChannel->setMode("Cnst");
-
+	
+	time_t now = time(NULL);
+	std::ostringstream oss;
+	oss << now;
+	std::string now_str = oss.str();
+	newChannel->setCreationTime(now_str);
+	
 	_channels[channelName] = newChannel;
 }
 
@@ -51,10 +55,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 {
 	std::map<std::string, std::string>	*joins;
 	if (!client.getRegistryState())
-	{
-		//ERR_NOTREGISTERED (451)
-		return (451);
-	}
+		return (451); //ERR_NOTREGISTERED (451)
 	if (!args.size())
 		return 461;
 	if (args.size() == 1 && args[0] == "0")
@@ -86,15 +87,13 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 			}
 			else
 			{
-				createChannel(channel, "", &client);
+				createChannel(channel, &client);
 				client.addJoinedChannel(getChannel(channel));
-				getChannel(channel)->addOperator(&client);
 
 				sendLine(client, ":" + client.getNick() + "!~" + client.getUser() + "@" + client.getIp() + " JOIN " + channel + "\r\n");
 				sendLine(client, ":" + _hostname + " 353 " + client.getNick() + " @ " + channel + " :@" + client.getNick() + "\r\n");
 				sendLine(client, ":" + _hostname + " 366 " + client.getNick() + " " + channel + " :" + "End of /NAMES list\r\n");
 			}
-
 		}
 		else // el channel ya exise
 		{

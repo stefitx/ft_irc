@@ -17,6 +17,7 @@ Channel::Channel(std::string name) {
 	_userLimitMode = false;
 	_topicSetterMember = NULL;
 	_topicSetTime.clear();
+	_creationTime.clear();
 }
 
 Channel::Channel(const Channel &other) :
@@ -29,6 +30,7 @@ Channel::Channel(const Channel &other) :
 	_mode(other._mode),
 	_topicSetterMember(other._topicSetterMember),
 	_topicSetTime(other._topicSetTime),
+	_creationTime(other._creationTime),
 	_members(other._members),
 	_operators(other._operators)
 {}
@@ -48,6 +50,7 @@ Channel &Channel::operator=(const Channel &other) {
 		_invitedUsers = other._invitedUsers;
 		_topicSetterMember = other._topicSetterMember;
 		_topicSetTime = other._topicSetTime;
+		_creationTime = other._creationTime;
 	}
 	return *this;
 }
@@ -139,6 +142,15 @@ std::map<std::string, Client *> &Channel::getMapOperators(){
 
 Client *Channel::getTopicSetterMember(){
 	return (_topicSetterMember);
+}
+
+std::string	Channel::getCreationTime(){
+	return _creationTime;
+}
+
+void	Channel::setCreationTime(std::string time)
+{
+	_creationTime = time;
 }
 
 void	Channel::setTopicSetterMember(Client *member)

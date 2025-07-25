@@ -34,6 +34,7 @@ class	Channel
 		void	setPassword(const std::string key);
 		void	setTopicSetterMember(Client *memeber);
 		void	setTopicSetTime(std::string time);
+		void	setCreationTime(std::string time);
 
 		int		authorizedToJoin(Client* client, std::string key);
 
@@ -43,6 +44,7 @@ class	Channel
 		bool		getTopicRestrictionMode();
 		Client*		getTopicSetterMember();
 		std::string	getTopicSetTime();
+		std::string	getCreationTime();
 		bool		isMember(Client *c) const;
 		bool 		isOperator(Client *c) const;
 
@@ -77,6 +79,7 @@ class	Channel
 		bool						_userLimitMode;
 		Client*						_topicSetterMember;
 		std::string					_topicSetTime;
+		std::string					_creationTime;
 
 		std::map<std::string, Client *>		_members;
 		std::map<std::string, Client *>		_operators;
