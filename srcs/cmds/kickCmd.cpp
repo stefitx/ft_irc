@@ -37,7 +37,8 @@ int Server::kickCmd(Client &issuer, std::vector<std::string> args)
         if (!reason.empty() && reason[0] == ':')
             reason.erase(0, 1);
     }
-
+    if (reason.size() > KICKLENNUM)
+        reason = reason.substr(0, KICKLENNUM);
     for (size_t i = 0; i < victims.size(); ++i)
     {
         const std::string &victimNick = victims[i];

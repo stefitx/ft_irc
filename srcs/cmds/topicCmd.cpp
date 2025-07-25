@@ -23,15 +23,16 @@ int Server::topicCmd(Client &client, std::vector<std::string> args)
         {
             sendLine(client, ":" + _hostname + " " + itoa3(332) + " " + client.getNick() + " " + channel + " " + getChannel(channel)->getTopic() + "\r\n"); // RPL_TOPIC
             sendLine(client, ":" + _hostname + " 333 " + client.getNick() + " " + channel + " " + getChannel(channel)->getTopicSetterMember()->getNick() + "!~" + getChannel(channel)->getTopicSetterMember()->getUser() + "@" + getChannel(channel)->getTopicSetterMember()->getIp() + " " + getChannel(channel)->getTopicSetTime() + "\r\n");
-            // >> @time=2025-07-24T20:06:27.016Z :tungsten.libera.chat 333 martalop #holabolamarta martalop!~martalop@195.55.43.195 1753387580
         }
     }
     else
     {
- 
         if (getChannel(channel)->getTopicRestrictionMode() && !getChannel(channel)->isChannelOperator(client.getNick()))
             return (errorReply(client, 482, channel, args), 0); // ERR_CHANOPRIVSNEEDED
-        
+        std::cout << "topic = " << args[1] << std::endl;
+        if (args[1].size() - 1 > TOPICLENNBR)
+            args[1] = args[1].substr(0, TOPICLENNBR + 1);
+        std::cout << "topic = " << args[1] << std::endl;
         time_t now = time(NULL);
         std::ostringstream oss;
         oss << now;

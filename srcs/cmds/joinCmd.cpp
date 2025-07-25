@@ -19,7 +19,7 @@ void	Server::createChannel(std::string channelName, Client *client)
 
 	newChannel->addMember(client);
 	newChannel->addOperator(client);
-	newChannel->setMode("Cnst");
+	newChannel->setMode("t");
 
 	time_t now = time(NULL);
 	std::ostringstream oss;
@@ -79,7 +79,7 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 		std::string	key = joins_it->second;
 		if (!getChannel(joins_it->first)) // si no encuentras el canal
 		{
-			if (channel[0] != '#')
+			if (channel[0] != CHANTYPES[0])
 			{
 				sendLine(client, ":" + _hostname + " " + itoa3(403) + " " + (client.getNick().empty() ? "*" : client.getNick()) + " " + channel + " :No such channel\r\n"); //ERR 403
 				++joins_it;
@@ -92,6 +92,8 @@ int	Server::joinCmd(Client &client, std::vector<std::string> args)
 			}
 			else
 			{
+				if (channel.size() > CHANNELLENNBR)
+					channel = channel.substr(0, CHANNELLENNBR + 1);
 				createChannel(channel, &client);
 				client.addJoinedChannel(getChannel(channel));
 

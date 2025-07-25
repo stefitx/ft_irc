@@ -1,4 +1,5 @@
 #include "../inc/Server.hpp"
+#include "../inc/Colors.h"
 
 std::string Server::colorLine(Client &client, const std::string &line, const std::string &color)
 {
@@ -93,7 +94,7 @@ void Server::handshake(Client &c)
     reply(c, 2,  "", "Your host is " + _hostname + ", running version 0.1");
     reply(c, 3,  "", "This server was created " + std::string(datebuf));
     reply(c, 4,  _hostname + " 0.1 aiwro imnptkol", "");
-    reply(c, 5,  "USERLEN=12 CHANTYPES=# CHANMODES=,ntkl", "are supported by this server");
+    reply(c, 5,  "CHANLIMIT=" + static_cast<std::string>(CHANLIMIT) + " CHANNELLEN=" + CHANNELLEN + " TOPICLEN=" + TOPICLEN + " PREFIX=" + PREFIX + " TARGMAX=" + TARGMAX + " USERLEN=" + USERLEN + " NICKLEN=" + NICKLEN + " KICKLEN=" + KICKLEN + " CHANTYPES=" + CHANTYPES + " CHANMODES=" + CHANMODES, "are supported by this server");
 	noticeCmd(c, vectorSplit(c.getNick() + " " + colorLine(c, "Hello", "GREEN") + " " + colorLine(c, c.getNick(), "BLUE") + colorLine(c, ", Welcome to our IRC server! Hope you enjoy.", "GREEN"), ' '));
 }
 

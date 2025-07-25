@@ -27,13 +27,33 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "Colors.h"
 #include "Client.hpp"
 #include "Channel.hpp"
-// #include "CommandParser.hpp"
 
+//Condiciones generales del server (RPL_ISUPPORT)
+# define CHANNELMODES "itkol kol" //CHANMODES en orden segun la sintaxis de la rply 004 (RPL_MYINFO) segun el subject
 
+//ISUPPORT Parameter Macros
+# define CHANLIMIT "#:4" 
+# define CHANMODES ",ko,l,it" // Define los modos de canal soportados y cómo se clasifican segun el subject (obligatorio).
+# define CHANNELLEN "42" // Los nombres de canal pueden tener hasta CHANNELLEN caracteres.
+# define CHANTYPES "#" // Los nombres de canal deben comenzar con algun caracter de CHANTYPES.
+# define MAXCONN "128"
+# define KICKLEN "369" //El parametro <reason> del comando KICK puede tener hasta KICKLEN caracteres
+# define MODES "3" //Se pueden cambiar hasta 3 modos de tipo A|B|C (parametro requerido) en un solo comando MODE.
+# define NICKLEN "30" //Los nicks pueden tener hasta NICKLEN caracteres.
+# define PREFIX "(o)@" // Define los roles en los canales (en este caso, solo operadores).
+# define TARGMAX "JOIN:4"
+# define TOPICLEN "307" //Los tópicos pueden tener hasta TOPICLEN caracteres.
+# define USERLEN "12"
+
+//ISUPPORT Parameter Macros as Integers
 # define CHANLIMITNUM 4
+# define CHANNELLENNBR 42
+# define KICKLENNUM 369
+# define NICKLENNBR 30
+# define TOPICLENNBR 307
+# define USERLENNUM 12
 
 enum CommandType
 {
@@ -55,7 +75,6 @@ enum CommandType
 	NOTICE,
 	UNKNOWN
 };
-
 
 class Client;
 
@@ -88,7 +107,6 @@ class Server
 		void		executeCmd(Client &, std::string cmd, std::vector<std::string> args);
 		void		handshake(Client &client);
 		CommandType	isCommand(const std::string &cmd);
-		//Channel *get_channel(const std::pair<std::string, Channel> &pair);
 		void		disconnectClient(Client &client);
 		void		errorReply(Client &cli, int code, std::string cmd, std::vector<std::string> args);
 		std::string	itoa3(int code);
@@ -121,7 +139,5 @@ class Server
 		~Server();
 		void	run();
 		void    stop();
-	//	bool sendLine(Client &cli, const std::string &line);
-
 } ;
 bool sendLine(Client &cli, const std::string &line);
