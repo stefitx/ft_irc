@@ -30,7 +30,6 @@ int Server::modeInitialChecks(Client &client, std::vector<std::string> args, con
 	return (0);
 }
 
-
 int	Server::modeCmd(Client &client, std::vector<std::string> args)
 {	
 	char        sign        = '+';
@@ -138,8 +137,7 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 				Client *victim = chan->getMembers(victimNick);
 				if (!victim)
 				{
-					std::vector<std::string> a; a.push_back(victimNick);
-					errorReply(client, 441, chanName, a);   // ERR_USERNOTINCHANNEL
+					errorReply(client, 441, chanName, vectorSplit("MODE " + chanName + " " + victimNick, ' '));
 					break;
 				}
 				(sign == '+') ? chan->addOperator(victim) : chan->removeOperator(victim);
@@ -149,8 +147,7 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 			}
 			default:
 			{
-				std::vector<std::string> a; a.push_back(std::string(1, m));
-				errorReply(client, 472, chanName, a);
+				errorReply(client, 472, chanName, vectorSplit("MODE " + chanName + " " + std::string(1, m), ' '));
 				break;
 			}
 		}

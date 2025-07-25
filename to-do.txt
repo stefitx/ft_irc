@@ -25,7 +25,7 @@ INVITE				:✅​
 JOIN				:
 KICK				:✅​
 KILL				:✅​
-MODE				:
+MODE				:✅​
 NICK				:✅​
 NOTICE				:✅​
 OPER				:✅​
@@ -33,5 +33,5 @@ PART				:✅​
 PASS				:✅​
 PRIVMSG				:✅​
 QUIT				:✅​
-TOPIC				:
+TOPIC				:✅​
 USER				:✅​

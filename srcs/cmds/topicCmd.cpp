@@ -14,8 +14,7 @@ int Server::topicCmd(Client &client, std::vector<std::string> args)
         return (errorReply(client, 403, "", vectorSplit(args[0], ',')), 0); // (403) ERR_NOSUCHCHANNEL
        
     if (!client.isChannelMember(channel))
-        return (errorReply(client, 442, "", vectorSplit(args[0], ',')), 0); // (442) ERR_NOTONCHANNEL
-
+		return (errorReply(client, 442, channel, vectorSplit("TOPIC " + channel, ' ')), 0);
     if (args.size() < 2) // there is no 'topic' arg
     {
         if (getChannel(channel)->getTopic().size() == 0) // si _topic estaba vacio
