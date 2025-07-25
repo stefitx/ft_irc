@@ -81,29 +81,29 @@ void Server::initListeningSocket()
 
 void Server::acceptNewClient()
 {
-	// should we remove the while()?
-	while (true)
+	struct sockaddr_in cliAddr;
+	socklen_t len = sizeof(cliAddr);
+	int fd = accept(_listenFd, reinterpret_cast<struct sockaddr *>(&cliAddr), &len);
+
+	if (fd == -1)
 	{
-		struct sockaddr_in cliAddr;
-		socklen_t len = sizeof(cliAddr);
-		int fd = accept(_listenFd, reinterpret_cast<struct sockaddr *>(&cliAddr), &len);
+		throw std::runtime_error("initServer: accept()");
+		// if (errno == EAGAIN || errno == EWOULDBLOCK)
+		// {
+		// 	std::cout << "No more clients to accept at the moment." << std::endl;
+		// 	break;
+		// }
+		// perror("accept");
+		// return;
+	}
 
-		if (fd == -1)
-		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				break;
-			perror("accept");
-			return;
-		}
-
-		_clients[fd] = new Client(fd);
-		struct pollfd pfd = {fd, POLLIN, 0};
-		_clients[fd]->setAddr(cliAddr);
-		_clients[fd]->getAddr().sin_family = AF_INET;
-		_clients[fd]->getAddr().sin_port = htons(_port); // Port is not set here, it will be set later
-		_pollFds.push_back(pfd);
-		_clients[fd]->setConnectionTime(time(NULL));
-}
+	_clients[fd] = new Client(fd);
+	struct pollfd pfd = {fd, POLLIN, 0};
+	_clients[fd]->setAddr(cliAddr);
+	_clients[fd]->getAddr().sin_family = AF_INET;
+	_clients[fd]->getAddr().sin_port = htons(_port); // Port is not set here, it will be set later
+	_pollFds.push_back(pfd);
+	_clients[fd]->setConnectionTime(time(NULL));
 }
 
 void Server::handleClientData(std::size_t idx)

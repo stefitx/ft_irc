@@ -25,7 +25,7 @@ SRC_NAMES	:=	main.cpp \
 				Client.cpp \
 				Channel.cpp \
 				Handshake.cpp \
-				Commands.cpp
+				execCmd.cpp
 CMDS_NAMES	:=	passCmd.cpp \
 				nickCmd.cpp \
 				userCmd.cpp \

@@ -19,23 +19,23 @@ static Server *g_server = NULL;
 
 static void handleSignal(int)
 {
-    if (g_server)
+	if (g_server)
 	{
 		std::cout << "\nShutting down server...\n";
-        g_server->stop();
+		g_server->stop();
 	}
 }
 
 static unsigned short parsePort(const char *arg)
 {
-    char *end;
+	char *end;
 	long port;
 
 	end = NULL;
-    port = std::strtol(arg, &end, 10);
-    if (*end != '\0' || port <= 0 || port > 65535)
+	port = std::strtol(arg, &end, 10);
+	if (*end != '\0' || port <= 0 || port > 65535)
 		return (0);
-    return (static_cast<unsigned short>(port));
+	return (static_cast<unsigned short>(port));
 }
 
 int main(int argc, char **argv)
@@ -43,30 +43,38 @@ int main(int argc, char **argv)
 	unsigned short port;
 	std::string pass;
 
-    if (argc != 3)
-    {
-        std::cerr << "Usage: ./ircserv <port> <password>\n";
-        return EXIT_FAILURE;
-    }
+	if (argc != 3)
+	{
+		std::cerr << "Usage: ./ircserv <port> <password>\n";
+		return EXIT_FAILURE;
+	}
 
-    port = parsePort(argv[1]);
-    if (!port)
-    {
-        std::cerr << "Invalid port\n";
-        return EXIT_FAILURE;
-    }
-    pass = argv[2];
-    Server srv(port, pass);
-	g_server = &srv;
+	port = parsePort(argv[1]);
+	if (!port)
+	{
+		std::cerr << "Invalid port\n";
+		return EXIT_FAILURE;
+	}
+	try
+	{
+		pass = argv[2];
+		Server srv(port, pass);
+		g_server = &srv;
 
-    struct sigaction sa;
-    sa.sa_handler = handleSignal;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    sigaction(SIGINT, &sa, NULL);
-    sigaction(SIGTERM, &sa, NULL);
-	sigaction(SIGQUIT, &sa, NULL);
-    srv.run();
-	std::cout << "Server stopped gracefully.\n";
-    return (0);
+		struct sigaction sa;
+		sa.sa_handler = handleSignal;
+		sigemptyset(&sa.sa_mask);
+		sa.sa_flags = 0;
+		sigaction(SIGINT, &sa, NULL);
+		sigaction(SIGTERM, &sa, NULL);
+		sigaction(SIGQUIT, &sa, NULL);
+		srv.run();
+		std::cout << "Server stopped gracefully.\n";
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << "Error: " << e.what() << '\n';
+		return EXIT_FAILURE;
+	}
+	return (0);
 }

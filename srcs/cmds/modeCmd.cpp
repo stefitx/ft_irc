@@ -34,7 +34,7 @@ int Server::modeInitialChecks(Client &client, std::vector<std::string> args, con
 
 
 int	Server::modeCmd(Client &client, std::vector<std::string> args)
-{	
+{
 	char        sign        = '+';
 	size_t      paramId     = 2;
 	std::string appliedFlags;
@@ -100,6 +100,9 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 				}
 				else
 				{
+					if (paramId >= args.size()) return (0);
+					if (args[paramId] != chan->getPassword())
+						return (464);
 					chan->setPassword("");
 					chan->removeMode('k');
 					chan->setPasswordMode(false);
@@ -145,9 +148,9 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 					// >> :cbr3s1.42barcelona.com 441 martalop #hi MODE :They aren't on that channel
 						// deberiamos tener:
 					// >> @time=2025-07-25T08:53:14.141Z :silver.libera.chat 441 martalop martalopppp #martatest1 :They aren't on that channel
-					
+
 					// 'martalop' (quien llama a mode), 'martalopppp'(persona que ya no esta en el canal)
-					errorReply(client, 441, chanName, vectorSplit("MODE " + chanName + " " + victimNick, ' '));
+					errorReply(client, 441, chanName, vectorSplit(chanName + " " + victimNick, ' '));
 					break;
 				}
 				(sign == '+') ? chan->addOperator(victim) : chan->removeOperator(victim);
@@ -157,7 +160,7 @@ int	Server::modeCmd(Client &client, std::vector<std::string> args)
 			}
 			default:
 			{
-				errorReply(client, 472, chanName, vectorSplit("MODE " + chanName + " " + std::string(1, m), ' '));
+				errorReply(client, 472, chanName, vectorSplit(std::string(1, m) + " " + chanName, ' '));
 				break;
 			}
 		}
