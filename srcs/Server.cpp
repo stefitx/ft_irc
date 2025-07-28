@@ -90,8 +90,8 @@ void Server::acceptNewClient()
 		throw std::runtime_error("initServer: accept()");
 		// if (errno == EAGAIN || errno == EWOULDBLOCK)
 		// {
-		// 	std::cout << "No more clients to accept at the moment." << std::endl;
-		// 	break;
+		// std::cout << "No more clients to accept at the moment." << std::endl;
+		// break;
 		// }
 		// perror("accept");
 		// return;
@@ -111,9 +111,35 @@ void Server::handleClientData(std::size_t idx)
     int     fd = _pollFds[idx].fd;
     Client *c  = _clients[fd];
     char    buf[1024];
-    ssize_t n = recv(fd, buf, sizeof(buf), MSG_DONTWAIT);
 
-    if (n > 0)
+	ssize_t bytes = recv(c->getFd(), buf, sizeof(buf), MSG_DONTWAIT);
+	if (bytes == -1)
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return;
+		perror("recv");
+		disconnectClient(*c, "");
+		return;
+	}
+	if (bytes == 0)
+	{
+		std::cout << "[i] Client closed fd=" << fd << "\n";
+		disconnectClient(*c, "");
+		return;
+	}
+	else if (bytes > 1024)
+	{
+		std::cerr << "[!] Warning: Received more than 1024 bytes, weird things might happen ((>.<)).\n";
+	}
+	else
+	{
+		buf[bytes] = '\0';
+		c->setBuffer(buf);
+		if (c->getBuffer().find_first_of("\r\n") == std::string::npos)
+			return;
+		processBuffer(c);
+	}
+/*   if (n > 0)
     {
         c->getBuffer().append(buf, static_cast<std::size_t>(n));
         processBuffer(c);
@@ -126,7 +152,7 @@ void Server::handleClientData(std::size_t idx)
             c->getBuffer().append("\r\n");
             processBuffer(c);
         }
-        removeClient(idx);
+        disconnectClient(*c, "");
         return;
     }
     if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -138,11 +164,11 @@ void Server::handleClientData(std::size_t idx)
             c->getBuffer().append("\r\n");
             processBuffer(c);
 	     }
-        removeClient(idx);
+        disconnectClient(*c, "");
         return;
     }
     perror("recv");
-    removeClient(idx);
+    disconnectClient(*c, "");*/
 }
 
 
@@ -216,13 +242,12 @@ void Server::run()
 			perror("poll");
 			break;
 		}
-
 		if (_pollFds[0].revents & POLLIN)
 			acceptNewClient();
 
 		for (ssize_t i = _pollFds.size() - 1; i >= 1; --i)
 		{
-			if (_pollFds[i].revents & POLLIN)
+			if (_pollFds[i].revents & POLLIN) // a client has sent something
 			{
 				handleClientData(i);
 				continue;

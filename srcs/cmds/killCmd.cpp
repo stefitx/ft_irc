@@ -24,18 +24,9 @@ int Server::killCmd(Client &client, std::vector<std::string> args)
 				message.erase(0, 1);
 
 			std::string killLine = ":" + targetClient->getNick() + "!~" + targetClient->getUser() + "@" + targetClient->getIp() + " KILL " + targetNick  + " :" + message;
-			std::string quitMsg = ":" + targetClient->getNick() + "!~" + targetClient->getUser() + "@" + targetClient->getIp() + " QUIT :Killed by " + client.getNick() + " (" + message + ")";
 			sendLine(*targetClient, killLine + "\r\n");
-			std::map<std::string, Channel *>::iterator it;
-			for (it = targetClient->getChannels().begin(); it != targetClient->getChannels().end(); ++it)
-			{
-				Channel* chan = getChannel(it->first);
-				if (chan) {
-					chan->broadcast(quitMsg, *targetClient);
-					chan->removeMember(targetClient);
-				}
-			}
-			disconnectClient(*targetClient);
+
+			disconnectClient(*targetClient, "Killed by " + client.getNick() + " (" + message + ")");
 			return (0);
 		}
 	}

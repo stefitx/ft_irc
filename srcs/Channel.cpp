@@ -228,14 +228,13 @@ bool	Channel::getTopicRestrictionMode(){
 
 int	Channel::authorizedToJoin(Client *client, std::string key)
 {
+	if (_userLimitMode && _clientNum + 1 > _userLimit) // (+l)
+		return (471); // ERR_CHANNELISFULL
 	if (_passwordMode) // (+k)
 	{
 		if (key.empty() || key != _password)
 			return (475); // ERR_BADCHANNELKEY
 	}
-	if (_userLimitMode && _clientNum + 1 >= _userLimit) // (+l)
-		return (471); // ERR_CHANNELISFULL
-
 	if (_inviteMode && !isInvitedUser(client))  //(+i)
 		return (473); // ERR_INVITEONLYCHAN
 	return (0);

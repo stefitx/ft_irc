@@ -44,11 +44,11 @@ bool sendLine(Client &cli, const std::string &line)
 			throw std::runtime_error("send failed");
 			// if (errno == EAGAIN || errno == EWOULDBLOCK)
 			// {
-			// 	std::cout << "sendLine: EAGAIN or EWOULDBLOCK, continue" << std::endl;
-			// 	continue;
+				// std::cout << "sendLine: EAGAIN or EWOULDBLOCK, continue" << std::endl;
+				// continue;
 			// }
-			// perror("send");
-			// return false;
+		//	perror("send");
+		//	return false;
 		}
 		left  -= n;
 		data  += n;

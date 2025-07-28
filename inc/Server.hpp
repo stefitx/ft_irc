@@ -107,7 +107,7 @@ class Server
 		void		executeCmd(Client &, std::string cmd, std::vector<std::string> args);
 		void		handshake(Client &client);
 		CommandType	isCommand(const std::string &cmd);
-		void		disconnectClient(Client &client);
+		void		disconnectClient(Client &client, std::string message);
 		void		errorReply(Client &cli, int code, std::string cmd, std::vector<std::string> args);
 		std::string	itoa3(int code);
 		std::map<std::string, std::string>	*parseJoinArgs(std::vector<std::string> args);
